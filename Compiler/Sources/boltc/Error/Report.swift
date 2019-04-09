@@ -21,16 +21,16 @@
 import Foundation
 
 /// Report an error to the user. Dependin
-func report<T>(level: ReportSeverity = .note, _ reported: T) where T: Reportable {
-	print(reported.text)
-	if level.shouldAbort {
+func report<T>(_ item: T) where T: Reportable {
+	print(item.report.text)
+	if item.report.severity.shouldAbort {
 		exit(1)
 	}
 }
 
 /// Entities that conform to the `Reportable` type can be reported to the user.
 protocol Reportable {
-	var text: String { get }
+    var report: (severity: ReportSeverity, text: String) { get }
 }
 
 /// The level of severity the error representes

@@ -23,10 +23,10 @@ enum GeneralError: Swift.Error {
 }
 
 extension GeneralError: Reportable {
-	var text: String {
-		switch self {
-		case .unknownErrorOccurred: 
-			return "An unknown error occurred."
-		}
-	}
+    var report: (severity: ReportSeverity, text: String) {
+        switch self {
+        case .unknownErrorOccurred:
+            return (.critical, "An unknown error occurred!")
+        }
+    }
 }
