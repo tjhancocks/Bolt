@@ -18,4 +18,32 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-report(level: .critical, GeneralError.unknownErrorOccurred)
+import Foundation
+
+/// Report an error to the user. Dependin
+func report<T>(level: ReportSeverity = .note, _ reported: T) where T: Reportable {
+	print(reported.text)
+	if level.shouldAbort {
+		exit(1)
+	}
+}
+
+/// Entities that conform to the `Reportable` type can be reported to the user.
+protocol Reportable {
+	var text: String { get }
+}
+
+/// The level of severity the error representes
+enum ReportSeverity: Int {
+	case critical = 0
+	case error = 1
+	case warning = 2
+	case note = 3
+	case ok = 4
+}
+
+extension ReportSeverity {
+	var shouldAbort: Bool {
+		return rawValue <= 2
+	}
+}

@@ -18,4 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-report(level: .critical, GeneralError.unknownErrorOccurred)
+enum GeneralError: Swift.Error {
+	case unknownErrorOccurred
+}
+
+extension GeneralError: Reportable {
+	var text: String {
+		switch self {
+		case .unknownErrorOccurred: 
+			return "An unknown error occurred."
+		}
+	}
+}
