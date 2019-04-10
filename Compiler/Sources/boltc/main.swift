@@ -18,4 +18,38 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-report(GeneralError.unknownErrorOccurred)
+import Foundation
+
+// MARK: - Errors
+
+enum BoltError: Swift.Error {
+    case tooFewArguments
+}
+
+extension BoltError: Reportable {
+    var report: (severity: ReportSeverity, text: String) {
+        switch self {
+        case .tooFewArguments:
+            return (.critical, "too few arguments provided.")
+        }
+    }
+}
+
+// MARK: - Fetch command line arguments and make sure they are not empty.
+
+let arguments = CommandLine.arguments[1...]
+guard arguments.isEmpty == false else {
+    report(BoltError.tooFewArguments)
+    exit(1)
+}
+
+// MARK: - Load files
+arguments.forEach { argument in
+    do {
+        let source = try File(path: argument).loadSource()
+        print("Loaded file: \(source.file)")
+    }
+    catch let error {
+        report(error)
+    }
+}

@@ -23,6 +23,7 @@ import Foundation
 /// The `File` structure is responsible for representing a file on disk.
 struct File {
 	private(set) var path: String
+    private(set) var virtual: Bool
 
 	/// Create a new file reference with the specified path.
 	///
@@ -30,7 +31,17 @@ struct File {
 	/// a file that _should_ be created.
 	init(path: String) {
 		self.path = path
+        self.virtual = false
 	}
+
+    /// Create a new virtual file.
+    ///
+    /// The created file does not exist in the file system, and is used with
+    /// source objects that do not originate from disk.
+    init() {
+        self.path = "memory"
+        self.virtual = true
+    }
 }
 
 // MARK: - Loading Source Code
@@ -45,7 +56,7 @@ extension File {
             throw Error.badFileEncoding(path: path)
         }
 
-        return Source(stringLiteral: text)
+        return Source(text, file: self)
     }
 }
 

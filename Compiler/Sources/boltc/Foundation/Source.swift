@@ -21,12 +21,21 @@
 struct Source: Equatable {
     typealias StringLiteralType = String
     private let raw: StringLiteralType
+    private(set) var file: File
 
-    init(_ source: StringLiteralType) {
+    init(_ source: StringLiteralType, file: File) {
         self.raw = source
+        self.file = file
     }
 }
 
+// MARK: - Equatable
+
+extension Source {
+    static func == (lhs: Source, rhs: Source) -> Bool {
+        return lhs.raw == rhs.raw
+    }
+}
 
 // MARK: - String Literal
 
@@ -34,10 +43,12 @@ extension Source: ExpressibleByStringLiteral {
 
     init(stringLiteral value: StringLiteralType) {
         self.raw = value
+        self.file = .init()
     }
 
     init(extendedGraphemeClusterLiteral: ExtendedGraphemeClusterType) {
         self.raw = extendedGraphemeClusterLiteral
+        self.file = .init()
     }
     
 }

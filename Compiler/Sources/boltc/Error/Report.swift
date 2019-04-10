@@ -21,16 +21,26 @@
 import Foundation
 
 /// Report an error to the user. Dependin
-func report<T>(_ item: T) where T: Reportable {
-	print(item.report.text)
-	if item.report.severity.shouldAbort {
-		exit(1)
-	}
+func report<T>(_ item: T) {
+    if let report = item as? Reportable {
+        print(report.report.text)
+        if report.report.severity.shouldAbort {
+            exit(1)
+        }
+    } else {
+        print("\(item)")
+    }
 }
 
 /// Entities that conform to the `Reportable` type can be reported to the user.
-protocol Reportable {
+protocol Reportable: CustomStringConvertible {
     var report: (severity: ReportSeverity, text: String) { get }
+}
+
+extension Reportable {
+    var description: String {
+        return report.text
+    }
 }
 
 /// The level of severity the error representes
