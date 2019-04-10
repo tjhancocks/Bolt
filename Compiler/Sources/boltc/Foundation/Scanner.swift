@@ -20,6 +20,40 @@
 
 class Scanner<T> where T: Collection {
 
+    private(set) var input: T
+    private var index: T.Index
 
+    init(input: T) {
+        self.input = input
+        self.index = input.startIndex
+    }
 
+    /// Peek at an element `n` positions ahead of the current index.
+    ///
+    /// This will return nil if no element exists at that position
+    func peek(ahead n: Int = 0) -> T.Element? {
+        guard let offset = input.index(index, offsetBy: n, limitedBy: input.endIndex) else {
+            return nil
+        }
+        return input[offset]
+    }
+
+    /// Check the value of the element is equal to the specified value.
+    @discardableResult
+    func advance(by n: Int = 1) throws -> T.Element {
+        guard let offset = input.index(index, offsetBy: n, limitedBy: input.endIndex) else {
+            throw Error.scannerOutOfBounds
+        }
+        let item = input[index]
+        index = offset
+        return item
+    }
+}
+
+// MARK: - Errors
+
+extension Scanner {
+    enum Error: Swift.Error {
+        case scannerOutOfBounds
+    }
 }

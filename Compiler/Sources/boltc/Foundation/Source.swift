@@ -58,6 +58,6 @@ extension Source: ExpressibleByStringLiteral {
 
 extension Source {
     var scanner: Scanner<StringLiteralType> {
-        return .init()
+        return .init(input: raw)
     }
 }
