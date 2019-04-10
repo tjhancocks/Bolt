@@ -191,7 +191,19 @@ extension Lexer {
             text.append(try advance())
         }
 
-        return .identifier(text: text, mark: currentMark)
+        if let keyword = isKeyword(text) {
+            return .keyword(keyword: keyword, mark: currentMark)
+        } else {
+            return .identifier(text: text, mark: currentMark)
+        }
+    }
+}
+
+// MARK: - Identifier Checks
+
+extension Lexer {
+    private func isKeyword(_ text: String) -> Keyword? {
+        return Keyword.allCases.first(where: { $0.text == text })
     }
 }
 

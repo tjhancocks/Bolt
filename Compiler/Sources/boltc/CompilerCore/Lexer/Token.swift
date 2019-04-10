@@ -23,6 +23,7 @@ enum Token {
     case integer(number: Int, text: String,  mark: Mark)
     case float(number: Double, text: String, mark: Mark)
     case identifier(text: String, mark: Mark)
+    case keyword(keyword: Keyword, mark: Mark)
 }
 
 // MARK: - Token Descriptions
@@ -38,6 +39,8 @@ extension Token: CustomStringConvertible {
             return "[float] \(mark):\(length) -- \(number)"
         case let .identifier(text, mark):
             return "[identifier] \(mark):\(length) -- \(text)"
+        case let .keyword(keyword, mark):
+            return "[keyword] \(mark):\(length) -- \(keyword.text)"
         }
     }
 }
@@ -60,6 +63,9 @@ extension Token {
 
         case let .identifier(text, _):
             return text.count
+
+        case let .keyword(keyword, _):
+            return keyword.text.count
         }
     }
 }
