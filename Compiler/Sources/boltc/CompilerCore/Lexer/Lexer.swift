@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Foundation
+
 class Lexer {
     private(set) var scanner: Scanner<String>
 
@@ -129,6 +131,9 @@ extension Lexer {
             else if try test(isNumber(_:)) {
                 discoveredTokens.append(try consumeNumber())
             }
+			else if try test(isIdentifier(_:)) {
+				discoveredTokens.append(try consumeIdentifier())
+			}
             else {
                 throw Error.unexpectedCharacterEncountered(character: try advance(), mark: currentMark)
             }
@@ -179,14 +184,39 @@ extension Lexer {
             throw Error.invalidNumericToken(text: text, mark: currentMark)
         }
     }
+
+    private func consumeIdentifier() throws -> Token {
+        var text: String = ""
+        while let c = peek(), isIdentifier(c) {
+            text.append(try advance())
+        }
+
+        if let keyword = isKeyword(text) {
+            return .keyword(keyword: keyword, mark: currentMark)
+        } else {
+            return .identifier(text: text, mark: currentMark)
+        }
+    }
+}
+
+// MARK: - Identifier Checks
+
+extension Lexer {
+    private func isKeyword(_ text: String) -> Keyword? {
+        return Keyword.allCases.first(where: { $0.text == text })
+    }
 }
 
 // MARK: - Tests
 
 extension Lexer {
     private func isNumber(_ c: Character) -> Bool {
-        return c.isNumber
+        return CharacterSet.numberSet.contains(c)
     }
+	
+	private func isIdentifier(_ c: Character) -> Bool {
+		return CharacterSet.identifierSet.contains(c)
+	}
 }
 
 // MARK: - Error
