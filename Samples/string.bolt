@@ -1,0 +1,2 @@
+// This is a leading test comment, and a single string literal for lexer tests.
+"Hello, World!"
