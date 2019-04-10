@@ -22,6 +22,8 @@ import Foundation
 
 /// The `File` structure is responsible for representing a file on disk.
 struct File {
+    private static let unknown: String = "(unknown file)"
+
 	private(set) var path: String
     private(set) var virtual: Bool
 
@@ -42,6 +44,21 @@ struct File {
         self.path = "memory"
         self.virtual = true
     }
+
+    /// The name of the file.
+    var name: String {
+        guard let lastPathComponent = path.components(separatedBy: "/").last else {
+            return File.unknown
+        }
+        return lastPathComponent
+    }
+
+    /// The proposed module name of the file.
+    var moduleName: String {
+        var fileComponents = name.components(separatedBy: ".")
+        fileComponents.removeFirst()
+        return fileComponents.joined(separator: ".")
+    }
 }
 
 // MARK: - Loading Source Code
@@ -57,6 +74,14 @@ extension File {
         }
 
         return Source(text, file: self)
+    }
+}
+
+// MARK: - Description
+
+extension File: CustomStringConvertible {
+    var description: String {
+        return name
     }
 }
 
