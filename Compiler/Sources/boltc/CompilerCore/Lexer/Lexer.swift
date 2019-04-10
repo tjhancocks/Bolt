@@ -94,8 +94,8 @@ extension Lexer {
         }
     }
 
-    private func test(_ body: (Character) -> Bool, advanceOnMatch: Bool = false) throws -> Bool {
-        if let char = peek(), body(char) {
+    private func test(_ body: (Character, Bool) -> Bool, advanceOnMatch: Bool = false) throws -> Bool {
+        if let char = peek(), body(char, true) {
             if advanceOnMatch {
                 try advance()
             }
@@ -128,12 +128,15 @@ extension Lexer {
             else if try test(LanguageSpec.current.doubleQuotedStringPrefix, advanceOnMatch: true) {
                 discoveredTokens.append(try consumeString())
             }
-            else if try test(isNumber(_:)) {
+            else if try test(isNumber(_:isFirst:)) {
                 discoveredTokens.append(try consumeNumber())
             }
-			else if try test(isIdentifier(_:)) {
-				discoveredTokens.append(try consumeIdentifier())
-			}
+            else if try test(isIdentifier(_:isFirst:)) {
+                discoveredTokens.append(try consumeIdentifier())
+            }
+            else if try test(isSymbol(_:isFirst:)) {
+                discoveredTokens.append(try consumeSymbol())
+            }
             else {
                 throw Error.unexpectedCharacterEncountered(character: try advance(), mark: currentMark)
             }
@@ -197,6 +200,14 @@ extension Lexer {
             return .identifier(text: text, mark: currentMark)
         }
     }
+
+    private func consumeSymbol() throws -> Token {
+        let symbolChar = try advance()
+        guard let symbol = Symbol(rawValue: symbolChar) else {
+            throw Error.unexpectedCharacterEncountered(character: symbolChar, mark: currentMark)
+        }
+        return .symbol(symbol: symbol, mark: currentMark)
+    }
 }
 
 // MARK: - Identifier Checks
@@ -210,13 +221,20 @@ extension Lexer {
 // MARK: - Tests
 
 extension Lexer {
-    private func isNumber(_ c: Character) -> Bool {
+    private func isNumber(_ c: Character, isFirst: Bool = false) -> Bool {
+        if c == "." && isFirst {
+            return false
+        }
         return CharacterSet.numberSet.contains(c)
     }
-	
-	private func isIdentifier(_ c: Character) -> Bool {
-		return CharacterSet.identifierSet.contains(c)
-	}
+
+    private func isIdentifier(_ c: Character, isFirst: Bool = false) -> Bool {
+        return CharacterSet.identifierSet.contains(c)
+    }
+
+    private func isSymbol(_ c: Character, isFirst: Bool = false) -> Bool {
+        return CharacterSet.symbolsSet.contains(c)
+    }
 }
 
 // MARK: - Error
