@@ -18,25 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
-
-extension CharacterSet {
-    static var numberSet: CharacterSet {
-        return CharacterSet(charactersIn: "0123456789.")
-    }
-
-    static var identifierSet: CharacterSet {
-        return CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "_"))
-    }
-
-    static var symbolsSet: CharacterSet {
-        let symbols: String = Symbol.allCases.map({ String($0.rawValue) }).joined()
-        return CharacterSet(charactersIn: symbols)
-    }
+enum Symbol: Character, CaseIterable {
+    case leftParen = "(", rightParen = ")"
+    case leftAngle = "<", rightAngle = ">"
+    case leftBracket = "[", rightBracket = "]"
+    case leftBrace = "{", rightBrace = "}"
+    case dot = ".", comma = ","
+    case colon = ":", semicolon = ";"
+    case slash = "/", backslash = "\\", pipe = "|"
+    case question = "?", exclaim = "!"
+    case plus = "+", minus = "-", star = "*"
+    case dollar = "$", hash = "#", percent = "%", caret = "^", ampersand = "&"
+    case equals = "="
+    case at = "@"
 }
 
-extension CharacterSet {
-    func contains(_ character: Character) -> Bool {
-        return isStrictSuperset(of: CharacterSet(charactersIn: String(character)))
+extension Symbol: CustomStringConvertible {
+    var description: String {
+        return "\(rawValue)"
     }
 }
