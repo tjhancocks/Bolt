@@ -38,6 +38,15 @@ class Scanner<T> where T: Collection {
         return input[offset]
     }
 
+    /// Peek at a sub collection of items, that stretches from the current index
+    /// to `n` positions away.
+    func peekCollection(of n: Int = 0) -> T.SubSequence? {
+        guard let offset = input.index(index, offsetBy: n, limitedBy: input.endIndex) else {
+            return nil
+        }
+        return input[index..<offset]
+    }
+
     /// Check the value of the element is equal to the specified value.
     @discardableResult
     func advance(by n: Int = 1) throws -> T.Element {
@@ -47,6 +56,12 @@ class Scanner<T> where T: Collection {
         let item = input[index]
         index = offset
         return item
+    }
+
+    /// Returns true if their are still more items available for the scanner
+    /// to consume.
+    var available: Bool {
+        return index < input.endIndex
     }
 }
 
