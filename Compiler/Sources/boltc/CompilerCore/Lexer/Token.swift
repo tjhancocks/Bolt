@@ -18,52 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-final class LanguageSpec {
-    static var version: Version {
-        return current.version
-    }
-
-    static let current = LanguageSpec()
-
-    var version: Version = .v001
+enum Token {
+    case string(text: String, mark: Mark)
 }
 
-// MARK: - Versioning Support
+// MARK: - Token Descriptions
 
-protocol LanguageSpecVersion {
-    var commentPrefix: String { get }
-}
-
-
-// MARK: - Versions
-
-extension LanguageSpec {
-    struct Version: LanguageSpecVersion {
-        var commentPrefix: String = "//"
-        var doubleQuotedStringPrefix: String = "\""
-        var doubleQuotedStringSuffix: String = "\""
+extension Token: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case let .string(text, mark):
+            return "[string] \(mark):\(length) -- \(text)"
+        }
     }
 }
 
-extension LanguageSpec: LanguageSpecVersion {
-    var commentPrefix: String {
-        return version.commentPrefix
-    }
+// MARK: - Token Lengths
 
-    var doubleQuotedStringPrefix: String {
-        return version.doubleQuotedStringPrefix
-    }
-
-    var doubleQuotedStringSuffix: String {
-        return version.doubleQuotedStringSuffix
-    }
-}
-
-
-// MARK: - v0.0.1
-
-extension LanguageSpec.Version {
-    static var v001: LanguageSpec.Version {
-        return .init()
+extension Token {
+    var length: Int {
+        switch self {
+        case let .string(text, _):
+            return text.count +
+                LanguageSpec.current.doubleQuotedStringPrefix.count +
+                LanguageSpec.current.doubleQuotedStringSuffix.count
+        }
     }
 }
