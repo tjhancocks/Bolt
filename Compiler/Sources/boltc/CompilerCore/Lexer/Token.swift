@@ -20,6 +20,8 @@
 
 enum Token {
     case string(text: String, mark: Mark)
+    case integer(number: Int, text: String,  mark: Mark)
+    case float(number: Double, text: String, mark: Mark)
 }
 
 // MARK: - Token Descriptions
@@ -29,6 +31,10 @@ extension Token: CustomStringConvertible {
         switch self {
         case let .string(text, mark):
             return "[string] \(mark):\(length) -- \(text)"
+        case let .integer(number, _, mark):
+            return "[integer] \(mark):\(length) -- \(number)"
+        case let .float(number, _, mark):
+            return "[float] \(mark):\(length) -- \(number)"
         }
     }
 }
@@ -42,6 +48,12 @@ extension Token {
             return text.count +
                 LanguageSpec.current.doubleQuotedStringPrefix.count +
                 LanguageSpec.current.doubleQuotedStringSuffix.count
+
+        case let .integer(_, text, _):
+            return text.count
+
+        case let .float(_, text, _):
+            return text.count
         }
     }
 }

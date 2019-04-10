@@ -32,7 +32,7 @@ class Scanner<T> where T: Collection {
     ///
     /// This will return nil if no element exists at that position
     func peek(ahead n: Int = 0) -> T.Element? {
-        guard let offset = input.index(index, offsetBy: n, limitedBy: input.endIndex) else {
+        guard let offset = input.index(index, offsetBy: n, limitedBy: input.endIndex), offset < input.endIndex else {
             return nil
         }
         return input[offset]

@@ -92,6 +92,17 @@ extension Lexer {
         }
     }
 
+    private func test(_ body: (Character) -> Bool, advanceOnMatch: Bool = false) throws -> Bool {
+        if let char = peek(), body(char) {
+            if advanceOnMatch {
+                try advance()
+            }
+            return true
+        } else {
+            return false
+        }
+    }
+
 }
 
 // MARK: - Lexical Analysis
@@ -115,8 +126,14 @@ extension Lexer {
             else if try test(LanguageSpec.current.doubleQuotedStringPrefix, advanceOnMatch: true) {
                 discoveredTokens.append(try consumeString())
             }
+            else if try test(isNumber(_:)) {
+                discoveredTokens.append(try consumeNumber())
+            }
+            else {
+                throw Error.unexpectedCharacterEncountered(character: try advance(), mark: currentMark)
+            }
         }
-
+        
         return TokenStream(tokens: discoveredTokens)
     }
 
@@ -145,14 +162,40 @@ extension Lexer {
         try advance()
         return .string(text: text, mark: currentMark)
     }
+
+    private func consumeNumber() throws -> Token {
+        var text: String = ""
+        while let c = peek(), isNumber(c) || c == "." {
+            text.append(try advance())
+        }
+
+        if let number = Int(text) {
+            return .integer(number: number, text: text, mark: currentMark)
+        }
+        else if let number = Double(text) {
+            return .float(number: number, text: text,mark: currentMark)
+        }
+        else {
+            throw Error.invalidNumericToken(text: text, mark: currentMark)
+        }
+    }
 }
 
+// MARK: - Tests
+
+extension Lexer {
+    private func isNumber(_ c: Character) -> Bool {
+        return c.isNumber
+    }
+}
 
 // MARK: - Error
 
 extension Lexer {
     enum Error: Swift.Error {
         case unexpectedEndOfSource
+        case invalidNumericToken(text: String, mark: Mark)
+        case unexpectedCharacterEncountered(character: Character, mark: Mark)
     }
 }
 
@@ -161,6 +204,10 @@ extension Lexer.Error: Reportable {
         switch self {
         case .unexpectedEndOfSource:
             return (.critical, "Unexpected end of source encountered.")
+        case let .invalidNumericToken(text, mark):
+            return (.error, "Invalid numeric token '\(text)' at \(mark)")
+        case let .unexpectedCharacterEncountered(char, mark):
+            return (.error, "Unexpected character '\(char)' encountered at \(mark)")
         }
     }
 }
