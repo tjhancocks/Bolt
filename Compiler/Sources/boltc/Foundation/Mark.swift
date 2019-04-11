@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct Mark {
+struct Mark: Equatable {
     let file: File
     let line: UInt
     let offset: UInt

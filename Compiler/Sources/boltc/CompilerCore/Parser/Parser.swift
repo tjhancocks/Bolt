@@ -78,8 +78,31 @@ extension Parser {
 // MARK: - Parser Protocol
 
 protocol ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) throws -> Bool
+    func test(for scanner: Scanner<[Token]>) -> Bool
     func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node
+}
+
+
+// MARK: - Scanner Extensions
+
+extension Scanner where T.Element == Token {
+
+    @discardableResult
+    func consume(expected: T.Element...) throws -> [T.Element] {
+        var expected = expected
+        var matched: [T.Element] = []
+
+        while available, expected.isEmpty == false {
+            let item = try advance()
+            guard expected.removeFirst().matches(item) else {
+                throw Parser.Error.unexpectedTokenEncountered(token: item)
+            }
+            matched.append(item)
+        }
+
+        return matched
+    }
+
 }
 
 // MARK: - Errors
@@ -88,6 +111,7 @@ extension Parser {
     enum Error: Swift.Error {
         case unexpectedEndOfTokenStream
         case unrecognised(token: Token)
+        case unexpectedTokenEncountered(token: Token)
     }
 }
 
@@ -98,6 +122,8 @@ extension Parser.Error: Reportable {
             return (.error, "Parser unexpectedly encountered end of token stream.")
         case let .unrecognised(token):
             return (.error, "Parser encountered an unrecognised token: \(token)")
+        case let .unexpectedTokenEncountered(token):
+            return (.error, "Unexpected token encountered: \(token)")
         }
     }
 }

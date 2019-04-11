@@ -21,7 +21,7 @@
 import Foundation
 
 /// The `File` structure is responsible for representing a file on disk.
-struct File {
+struct File: Equatable {
     private static let unknown: String = "(unknown file)"
 
 	private(set) var path: String

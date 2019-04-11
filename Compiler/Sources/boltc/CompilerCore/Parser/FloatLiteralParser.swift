@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 struct FloatLiteralParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) throws -> Bool {
+    func test(for scanner: Scanner<[Token]>) -> Bool {
         if case .float? = scanner.peek() {
             return true
         } else {

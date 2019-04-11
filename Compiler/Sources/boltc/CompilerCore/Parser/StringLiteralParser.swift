@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 struct StringLiteralParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) throws -> Bool {
+    func test(for scanner: Scanner<[Token]>) -> Bool {
         if case .string? = scanner.peek() {
             return true
         } else {
