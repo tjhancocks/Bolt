@@ -1,15 +1,15 @@
 // Copyright (c) 2019 Tom Hancocks
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,40 +18,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
+class Parser {
+    private(set) var tokenStream: TokenStream
 
-// MARK: - Errors
-
-enum BoltError: Swift.Error {
-    case tooFewArguments
-}
-
-extension BoltError: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
-        switch self {
-        case .tooFewArguments:
-            return (.critical, "too few arguments provided.")
-        }
+    init(tokenStream: TokenStream) {
+        self.tokenStream = tokenStream
     }
 }
 
-// MARK: - Fetch command line arguments and make sure they are not empty.
+// MARK: - Parsing
 
-let arguments = CommandLine.arguments[1...]
-guard arguments.isEmpty == false else {
-    report(BoltError.tooFewArguments)
-    exit(1)
-}
+extension Parser {
 
-// MARK: - Load files
-arguments.forEach { argument in
-    do {
-        let source = try File(path: argument).loadSource()
-        let lexer = Lexer(source: source)
-        let parser = Parser(tokenStream: try lexer.performAnalysis())
-        let ast = try parser.parse()
+    @discardableResult
+    func parse() throws -> AbstractSyntaxTree {
+        return AbstractSyntaxTree(moduleName: tokenStream.file.moduleName)
     }
-    catch let error {
-        report(error)
-    }
+
 }

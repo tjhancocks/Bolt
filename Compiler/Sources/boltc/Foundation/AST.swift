@@ -30,15 +30,25 @@ class AbstractSyntaxTree {
     }
 }
 
+extension AbstractSyntaxTree: CustomStringConvertible {
+    var description: String {
+        return "AST of '\(root)'"
+    }
+}
+
 // MARK: - Node Foundation
 
 extension AbstractSyntaxTree {
-    class Node {
+    class Node: CustomStringConvertible {
         private(set) var parent: AbstractSyntaxTree.Node?
         private(set) var children: [AbstractSyntaxTree.Node] = []
 
         func add(_ node: AbstractSyntaxTree.Node) {
             children.append(node)
+        }
+
+        var description: String {
+            return "AST Node"
         }
     }
 }
@@ -64,6 +74,10 @@ extension AbstractSyntaxTree {
 
         init(named name: String) {
             self.name = name
+        }
+
+        override var description: String {
+            return "Module \(name)"
         }
     }
 }

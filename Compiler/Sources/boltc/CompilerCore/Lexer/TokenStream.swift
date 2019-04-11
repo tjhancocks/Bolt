@@ -19,9 +19,11 @@
 // SOFTWARE.
 
 class TokenStream {
+    private(set) var file: File
     private(set) var tokens: [Token]
 
-    init(tokens: [Token]) {
+    init(file: File, tokens: [Token]) {
+        self.file = file
         self.tokens = tokens
     }
 }

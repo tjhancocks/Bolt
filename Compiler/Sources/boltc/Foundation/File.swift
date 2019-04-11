@@ -56,7 +56,7 @@ struct File {
     /// The proposed module name of the file.
     var moduleName: String {
         var fileComponents = name.components(separatedBy: ".")
-        fileComponents.removeFirst()
+        fileComponents.removeLast()
         return fileComponents.joined(separator: ".")
     }
 }
