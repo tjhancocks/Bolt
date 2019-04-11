@@ -22,16 +22,18 @@ extension AbstractSyntaxTree {
     class FunctionNode: Node {
         private(set) var name: String
         private(set) var returnType: AbstractSyntaxTree.TypeNode
+        private(set) var parameters: [AbstractSyntaxTree.ParameterNode]
         private(set) var mark: Mark
 
-        init(name: String, returnType: AbstractSyntaxTree.TypeNode, mark: Mark) {
+        init(name: String, returnType: AbstractSyntaxTree.TypeNode, parameters: [AbstractSyntaxTree.ParameterNode], mark: Mark) {
             self.name = name
             self.mark = mark
             self.returnType = returnType
+            self.parameters = parameters
         }
 
         override var description: String {
-            return "Function '\(name)' returning '\(returnType)' [\(mark)]"
+            return "Function '\(name)' returning '\(returnType)' and \(parameters.count) parameter(s) [\(mark)]"
         }
     }
 }

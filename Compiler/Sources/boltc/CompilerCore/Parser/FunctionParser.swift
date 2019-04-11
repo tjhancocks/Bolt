@@ -48,12 +48,24 @@ struct FunctionParser: ParserHelperProtocol {
             throw Parser.Error.unexpectedTokenEncountered(token: functionNameToken)
         }
 
-        // Arguments
-        try scanner.consume(expected:
-            .symbol(symbol: .leftParen, mark: .unknown),
-            .symbol(symbol: .rightParen, mark: .unknown)
-        )
+        // Parameters
+        try scanner.consume(expected:.symbol(symbol: .leftParen, mark: .unknown))
+        var parameters: [AbstractSyntaxTree.ParameterNode] = []
+        while scanner.available {
+            if case .symbol(.rightParen, _)? = scanner.peek() {
+                break
+            }
 
-        return AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, mark: mark)
+            parameters.append(try ParameterParser.parse(from: scanner))
+
+            if case .symbol(.comma, _)? = scanner.peek() {
+                try scanner.advance()
+            } else {
+                break
+            }
+        }
+        try scanner.consume(expected: .symbol(symbol: .rightParen, mark: .unknown))
+
+        return AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, parameters: parameters, mark: mark)
     }
 }
