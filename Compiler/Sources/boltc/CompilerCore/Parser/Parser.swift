@@ -49,7 +49,8 @@ extension Parser {
         return [
             StringLiteralParser(),
             FloatLiteralParser(),
-            IntegerLiteralParser()
+            IntegerLiteralParser(),
+            CallParser()
         ]
     }
 

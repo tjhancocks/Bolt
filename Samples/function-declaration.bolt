@@ -10,3 +10,9 @@ func<None> baz(alpha: String, beta: Int8)
 func<String> foo() {
 	"Test"
 }
+
+func<String> bar() {
+	foo()
+	foo(1, 2)
+	foo(bar(), "Hello", baz(1, 2))
+}
