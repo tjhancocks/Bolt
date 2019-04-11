@@ -27,6 +27,7 @@ class Parser {
             StringLiteralParser(),
             FloatLiteralParser(),
             IntegerLiteralParser(),
+            FunctionParser(),
             TypeParser()
         ]
     }()
@@ -59,7 +60,7 @@ extension Parser {
     func parseNextExpression(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
         // Loop through the parsers and find one that matches.
         for parser in parsers {
-            if try parser.test(for: scanner) {
+            if parser.test(for: scanner) {
                 return try parser.parse(from: scanner)
             }
         }

@@ -1,0 +1,4 @@
+// Function declaration parser test
+// The first sample is a simple function declaration with no parameters.
+func<None> foo()
+func<Int8*> bar()
