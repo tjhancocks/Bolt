@@ -20,9 +20,17 @@
 
 class Parser {
     private(set) var tokenStream: TokenStream
+    private(set) var scanner: Scanner<[Token]>
+
+    lazy var parsers: [ParserHelperProtocol] = {
+        return [
+            StringLiteralParser()
+        ]
+    }()
 
     init(tokenStream: TokenStream) {
         self.tokenStream = tokenStream
+        self.scanner = tokenStream.scanner
     }
 }
 
@@ -32,7 +40,55 @@ extension Parser {
 
     @discardableResult
     func parse() throws -> AbstractSyntaxTree {
-        return AbstractSyntaxTree(moduleName: tokenStream.file.moduleName)
+        let ast = AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName)
+
+        mainParseLoop: while scanner.available {
+            // Loop through the parsers and find one that matches.
+            for parser in parsers {
+                if try parser.test(for: scanner) {
+                    let node = try parser.parse(from: scanner)
+                    continue mainParseLoop
+                }
+            }
+
+            // If we get here, then we must assume that we could not recognise
+            // the sequence of tokens
+            if let token = scanner.peek() {
+                throw Error.unrecognised(token: token)
+            }
+            else {
+                throw Error.unexpectedEndOfTokenStream
+            }
+        }
+
+        return ast
     }
 
+}
+
+// MARK: - Parser Protocol
+
+protocol ParserHelperProtocol {
+    func test(for scanner: Scanner<[Token]>) throws -> Bool
+    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node
+}
+
+// MARK: - Errors
+
+extension Parser {
+    enum Error: Swift.Error {
+        case unexpectedEndOfTokenStream
+        case unrecognised(token: Token)
+    }
+}
+
+extension Parser.Error: Reportable {
+    var report: (severity: ReportSeverity, text: String) {
+        switch self {
+        case .unexpectedEndOfTokenStream:
+            return (.error, "Parser unexpectedly encountered end of token stream.")
+        case let .unrecognised(token):
+            return (.error, "Parser encountered an unrecognised token: \(token)")
+        }
+    }
 }

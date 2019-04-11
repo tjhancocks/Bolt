@@ -18,18 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
-
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+struct StringLiteralParser: ParserHelperProtocol {
+    func test(for scanner: Scanner<[Token]>) throws -> Bool {
+        return false
     }
-}
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
+    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+        throw Parser.Error.unexpectedEndOfTokenStream
     }
 }

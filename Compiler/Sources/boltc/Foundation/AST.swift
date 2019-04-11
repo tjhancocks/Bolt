@@ -19,20 +19,25 @@
 // SOFTWARE.
 
 class AbstractSyntaxTree {
-    private(set) var root: Node
 
-    init(moduleName: String) {
-        self.root = ModuleNode(named: moduleName)
+    private(set) var modules: [AbstractSyntaxTree.Node] = []
+    private(set) var visitNode: Node?
+
+    init(mainModuleName moduleName: String) {
+        self.modules.append(ModuleNode(named: moduleName, owner: self))
     }
 
     func traverse(_ body: (AbstractSyntaxTree.Node) throws -> [AbstractSyntaxTree.Node]) rethrows {
-        _ = try root.traverse(body)
+        try modules.forEach {
+            _ = try $0.traverse(body)
+        }
     }
 }
 
 extension AbstractSyntaxTree: CustomStringConvertible {
     var description: String {
-        return "AST of '\(root)'"
+        let modules = self.modules.map({ $0.description }).joined(separator: ", ")
+        return "AST containing modules '\(modules)'"
     }
 }
 
@@ -40,10 +45,16 @@ extension AbstractSyntaxTree: CustomStringConvertible {
 
 extension AbstractSyntaxTree {
     class Node: CustomStringConvertible {
+        private(set) var owner: AbstractSyntaxTree?
         private(set) var parent: AbstractSyntaxTree.Node?
         private(set) var children: [AbstractSyntaxTree.Node] = []
 
+        init(owner: AbstractSyntaxTree? = nil) {
+            self.owner = owner
+        }
+
         func add(_ node: AbstractSyntaxTree.Node) {
+            node.owner = owner
             children.append(node)
         }
 
@@ -72,8 +83,9 @@ extension AbstractSyntaxTree {
     class ModuleNode: Node {
         private(set) var name: String
 
-        init(named name: String) {
+        init(named name: String, owner: AbstractSyntaxTree) {
             self.name = name
+            super.init(owner: owner)
         }
 
         override var description: String {
