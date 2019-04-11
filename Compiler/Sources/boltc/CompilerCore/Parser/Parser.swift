@@ -42,26 +42,33 @@ extension Parser {
     func parse() throws -> AbstractSyntaxTree {
         let ast = AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName)
 
-        mainParseLoop: while scanner.available {
-            // Loop through the parsers and find one that matches.
-            for parser in parsers {
-                if try parser.test(for: scanner) {
-                    let node = try parser.parse(from: scanner)
-                    continue mainParseLoop
-                }
-            }
+        while scanner.available {
+            ast.add(try parseNextExpression(from: scanner))
+        }
 
-            // If we get here, then we must assume that we could not recognise
-            // the sequence of tokens
-            if let token = scanner.peek() {
-                throw Error.unrecognised(token: token)
-            }
-            else {
-                throw Error.unexpectedEndOfTokenStream
-            }
+        ast.modules.forEach {
+            print($0)
         }
 
         return ast
+    }
+
+    func parseNextExpression(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+        // Loop through the parsers and find one that matches.
+        for parser in parsers {
+            if try parser.test(for: scanner) {
+                return try parser.parse(from: scanner)
+            }
+        }
+
+        // If we get here, then we must assume that we could not recognise
+        // the sequence of tokens
+        if let token = scanner.peek() {
+            throw Error.unrecognised(token: token)
+        }
+        else {
+            throw Error.unexpectedEndOfTokenStream
+        }
     }
 
 }

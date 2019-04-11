@@ -21,16 +21,40 @@
 class AbstractSyntaxTree {
 
     private(set) var modules: [AbstractSyntaxTree.Node] = []
-    private(set) var visitNode: Node?
+    private(set) var visitStack: [AbstractSyntaxTree.Node] = []
+
+    var visitNode: AbstractSyntaxTree.Node {
+        guard let node = visitStack.last else {
+            fatalError("AST visit stack is corrupted.")
+        }
+        return node
+    }
 
     init(mainModuleName moduleName: String) {
-        self.modules.append(ModuleNode(named: moduleName, owner: self))
+        let initialModule = ModuleNode(named: moduleName, owner: self)
+        self.modules.append(initialModule)
+        self.visitStack.append(initialModule)
     }
 
     func traverse(_ body: (AbstractSyntaxTree.Node) throws -> [AbstractSyntaxTree.Node]) rethrows {
         try modules.forEach {
             _ = try $0.traverse(body)
         }
+    }
+
+    func visit(_ node: AbstractSyntaxTree.Node) {
+        visitStack.append(node)
+    }
+
+    func leave() throws -> AbstractSyntaxTree.Node {
+        guard visitStack.count == 1, let node = visitStack.popLast() else {
+            throw Error.attemptedToLeaveMainModule
+        }
+        return node
+    }
+
+    func add(_ node: AbstractSyntaxTree.Node) {
+        visitNode.add(node)
     }
 }
 
@@ -89,8 +113,16 @@ extension AbstractSyntaxTree {
         }
 
         override var description: String {
-            return "Module \(name)"
+            let childrenDescription = children.map({ "\t\($0.description)" }).joined(separator: "\n")
+            return "Module \(name)\n\(childrenDescription)"
         }
     }
 }
 
+// MARK: - Errors
+
+extension AbstractSyntaxTree {
+    enum Error: Swift.Error {
+        case attemptedToLeaveMainModule
+    }
+}

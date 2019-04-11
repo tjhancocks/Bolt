@@ -18,20 +18,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct StringLiteralParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) throws -> Bool {
-        if case .string? = scanner.peek() {
-            return true
-        } else {
-            return false
-        }
-    }
+extension AbstractSyntaxTree {
+    class StringLiteralNode: Node {
+        private(set) var value: String
+        private(set) var mark: Mark
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
-        let token = try scanner.advance()
-        guard case let .string(text, mark) = token else {
-            throw Parser.Error.unrecognised(token: token)
+        init(value: String, mark: Mark) {
+            self.value = value
+            self.mark = mark
         }
-        return AbstractSyntaxTree.StringLiteralNode(value: text, mark: mark)
+
+        override var description: String {
+            return "String '\(value)' [\(mark)]"
+        }
     }
 }
+
