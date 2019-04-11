@@ -24,7 +24,8 @@ class Parser {
 
     lazy var parsers: [ParserHelperProtocol] = {
         return [
-            StringLiteralParser()
+            StringLiteralParser(),
+            FloatLiteralParser()
         ]
     }()
 
