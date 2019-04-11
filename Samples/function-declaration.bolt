@@ -2,4 +2,11 @@
 // The first sample is a simple function declaration with no parameters.
 func<None> foo()
 func<Int8*> bar()
+
+// The next samples are function declarations with parameters
 func<None> baz(alpha: String, beta: Int8)
+
+// Finally a function declaration with a code block.
+func<String> foo() {
+	"Test"
+}

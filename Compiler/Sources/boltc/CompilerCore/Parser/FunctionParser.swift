@@ -66,6 +66,16 @@ struct FunctionParser: ParserHelperProtocol {
         }
         try scanner.consume(expected: .symbol(symbol: .rightParen, mark: .unknown))
 
-        return AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, parameters: parameters, mark: mark)
+        // Build the declaration
+        let declaration = AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, parameters: parameters, mark: mark)
+
+        // Check if there is a code body attached? If so then add it.
+        let codeBlockParser = CodeBlockParser()
+        if codeBlockParser.test(for: scanner) {
+            declaration.add(try codeBlockParser.parse(from: scanner))
+        }
+
+        // Return the function node.
+        return declaration
     }
 }

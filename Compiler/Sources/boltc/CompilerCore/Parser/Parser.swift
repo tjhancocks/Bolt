@@ -23,19 +23,36 @@ class Parser {
     private(set) var scanner: Scanner<[Token]>
 
     lazy var parsers: [ParserHelperProtocol] = {
-        return [
-            StringLiteralParser(),
-            FloatLiteralParser(),
-            IntegerLiteralParser(),
-            FunctionParser(),
-            TypeParser()
-        ]
+        return Parser.rootParsers
     }()
 
     init(tokenStream: TokenStream) {
         self.tokenStream = tokenStream
         self.scanner = tokenStream.scanner
     }
+}
+
+// MARK: - Parser Lookup
+
+extension Parser {
+
+    static var rootParsers: [ParserHelperProtocol] {
+        return [
+            StringLiteralParser(),
+            FloatLiteralParser(),
+            IntegerLiteralParser(),
+            FunctionParser()
+        ]
+    }
+
+    static var scopedParsers: [ParserHelperProtocol] {
+        return [
+            StringLiteralParser(),
+            FloatLiteralParser(),
+            IntegerLiteralParser()
+        ]
+    }
+
 }
 
 // MARK: - Parsing
