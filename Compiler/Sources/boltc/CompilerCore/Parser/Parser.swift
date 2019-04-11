@@ -26,7 +26,8 @@ class Parser {
         return [
             StringLiteralParser(),
             FloatLiteralParser(),
-            IntegerLiteralParser()
+            IntegerLiteralParser(),
+            TypeParser()
         ]
     }()
 

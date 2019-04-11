@@ -18,13 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum Token {
+enum Token: Equatable {
     case string(text: String, mark: Mark)
     case integer(number: Int, text: String,  mark: Mark)
     case float(number: Double, text: String, mark: Mark)
     case identifier(text: String, mark: Mark)
     case keyword(keyword: Keyword, mark: Mark)
     case symbol(symbol: Symbol, mark: Mark)
+}
+
+// MARK: - Matching
+
+extension Token {
+    func matches(_ token: Token, absolute: Bool = false) -> Bool {
+        if absolute {
+            return token == self
+        }
+
+        switch (self, token) {
+        case (.string, .string):                                return true
+        case (.integer, .integer):                              return true
+        case (.float, .float):                                  return true
+        case let (.identifier(lhs, _), .identifier(rhs, _)):    return (lhs == rhs)
+        case let (.keyword(lhs, _), .keyword(rhs, _)):          return (lhs == rhs)
+        case let (.symbol(lhs, _), .symbol(rhs, _)):            return (lhs == rhs)
+        default:                                                return false
+        }
+    }
 }
 
 // MARK: - Token Descriptions
