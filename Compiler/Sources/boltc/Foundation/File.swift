@@ -25,6 +25,7 @@ struct File: Equatable {
     private static let unknown: String = "(unknown file)"
 
 	private(set) var path: String
+    private(set) var url: URL?
     private(set) var virtual: Bool
 
 	/// Create a new file reference with the specified path.
@@ -33,6 +34,7 @@ struct File: Equatable {
 	/// a file that _should_ be created.
 	init(path: String) {
 		self.path = path
+        self.url = URL(fileURLWithPath: path)
         self.virtual = false
 	}
 
@@ -65,7 +67,7 @@ struct File: Equatable {
 
 extension File {
     func loadSource() throws -> Source {
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
+        guard let url = url, let data = try? Data(contentsOf: url) else {
             throw Error.fileNotFound(path: path)
         }
 
@@ -74,6 +76,12 @@ extension File {
         }
 
         return Source(text, file: self)
+    }
+
+    func validate() throws {
+        guard let url = url, let _ = try? Data(contentsOf: url) else {
+            throw Error.fileNotFound(path: path)
+        }
     }
 }
 

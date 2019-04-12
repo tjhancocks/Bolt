@@ -20,11 +20,15 @@
 
 class BuildSystem {
 
-    static let main = BuildSystem()
-
-    private init() {}
-
+    // Build artefacts
     private(set) var modules: [Module] = []
+
+    // Build flags
+    var emitVersion: Bool = false
+
+    // Only one build system should exist - so its a singleton
+    static let main = BuildSystem()
+    private init() {}
 
     func add(module moduleFile: File) {
         self.modules.append(Module(for: moduleFile))
@@ -37,9 +41,27 @@ class BuildSystem {
 extension BuildSystem {
     class Module {
         private(set) var file: File
+        private(set) var buildSystem: BuildSystem
 
-        init(for file: File) {
+        init(for file: File, in buildSystem: BuildSystem = .main) {
             self.file = file
+            self.buildSystem = buildSystem
         }
+    }
+}
+
+// MARK: - Build
+
+extension BuildSystem {
+    func run() throws {
+        try modules.forEach { module in
+            try module.build()
+        }
+    }
+}
+
+extension BuildSystem.Module {
+    func build() throws {
+        print("Building \(file)")
     }
 }
