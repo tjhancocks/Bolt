@@ -27,6 +27,7 @@ class BuildSystem {
 
     // Build flags
     var emitVersion: Bool = false
+    private(set) var libraryPaths: [URL] = []
 
     // Only one build system should exist - so its a singleton
     static let main = BuildSystem()
@@ -34,6 +35,11 @@ class BuildSystem {
 
     func add(module moduleFile: File) {
         self.modules.append(Module(for: moduleFile))
+    }
+
+    func add(libraryPath: String) throws {
+        let url = URL(fileURLWithPath: libraryPath)
+        libraryPaths.append(url)
     }
 
 }
@@ -72,13 +78,13 @@ extension BuildSystem {
 }
 
 extension BuildSystem.Module {
-    func importModule() throws -> AbstractSyntaxTree {
+    static func `import`(for file: File) throws -> AbstractSyntaxTree {
         let lexer = Lexer(source: try file.loadSource())
         let parser = Parser(tokenStream: try lexer.performAnalysis())
         return try parser.parse()
     }
 
     func build() throws {
-        let ast = try importModule()
+        let ast = try BuildSystem.Module.import(for: file)
     }
 }

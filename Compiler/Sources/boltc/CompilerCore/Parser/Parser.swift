@@ -38,7 +38,8 @@ extension Parser {
 
     static var rootParsers: [ParserHelperProtocol] {
         return [
-            FunctionParser()
+            FunctionParser(),
+            ImportParser()
         ]
     }
 
@@ -53,7 +54,8 @@ extension Parser {
             StringLiteralParser(),
             FloatLiteralParser(),
             IntegerLiteralParser(),
-            CallParser()
+            CallParser(),
+            IdentifierParser()
         ]
     }
 

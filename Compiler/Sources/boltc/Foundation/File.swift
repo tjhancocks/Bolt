@@ -28,15 +28,25 @@ struct File: Equatable {
     private(set) var url: URL?
     private(set) var virtual: Bool
 
-	/// Create a new file reference with the specified path.
-	///
-	/// The created file does not need to exist and can just be a reference to
-	/// a file that _should_ be created.
-	init(path: String) {
-		self.path = path
+    /// Create a new file reference with the specified path.
+    ///
+    /// The created file does not need to exist and can just be a reference to
+    /// a file that _should_ be created.
+    init(path: String) {
+        self.path = path
         self.url = URL(fileURLWithPath: path)
         self.virtual = false
-	}
+    }
+
+    /// Create a new file reference with the specified URL.
+    ///
+    /// The created file does not need to exist and can just be a reference to
+    /// a file that _should_ be created.
+    init(url: URL) {
+        self.path = url.absoluteString
+        self.url = url
+        self.virtual = false
+    }
 
     /// Create a new virtual file.
     ///

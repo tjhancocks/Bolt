@@ -37,7 +37,8 @@ class Invocation {
 
             switch arg {
                 // Check for a flag
-            case "--version":           BuildSystem.main.emitVersion = true
+            case "--version":       BuildSystem.main.emitVersion = true
+            case "--library":       try BuildSystem.main.add(libraryPath: try arguments.advance())
 
                 // If the flag was not found, then attempt to add a new file/module
             default:
