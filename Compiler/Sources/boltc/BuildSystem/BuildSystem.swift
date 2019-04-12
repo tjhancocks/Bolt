@@ -72,7 +72,13 @@ extension BuildSystem {
 }
 
 extension BuildSystem.Module {
+    func importModule() throws -> AbstractSyntaxTree {
+        let lexer = Lexer(source: try file.loadSource())
+        let parser = Parser(tokenStream: try lexer.performAnalysis())
+        return try parser.parse()
+    }
+
     func build() throws {
-        print("Building \(file)")
+        let ast = try importModule()
     }
 }
