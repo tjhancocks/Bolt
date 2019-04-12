@@ -18,6 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import Foundation
+
 class BuildSystem {
 
     // Build artefacts
@@ -54,6 +56,15 @@ extension BuildSystem {
 
 extension BuildSystem {
     func run() throws {
+        // Some flags/options require an immediate action, or even termination
+        // of the compiler.
+        if emitVersion {
+            print("Bolt Compiler")
+            print(" boltc v0.0.1")
+            print(" MIT License - Copyright (c) 2019 Tom Hancocks")
+            exit(0)
+        }
+
         try modules.forEach { module in
             try module.build()
         }

@@ -27,6 +27,10 @@ class Invocation {
     }
 
     func run() throws {
+        if arguments.available == false {
+            throw Error.tooFewArguments 
+        }
+
         // Work through the arguments and setup the build system.
         while arguments.available {
             let arg = try arguments.advance()
@@ -54,5 +58,6 @@ class Invocation {
 extension Invocation {
     enum Error: Swift.Error {
         case expectedArgument
+        case tooFewArguments
     }
 }
