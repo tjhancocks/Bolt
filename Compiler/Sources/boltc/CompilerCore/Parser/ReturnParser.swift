@@ -27,7 +27,7 @@ struct ReturnParser: ParserHelperProtocol {
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         try scanner.consume(expected: .keyword(keyword: .return, mark: .unknown))
 
         // Is there an expression following the return keyword?
@@ -35,7 +35,7 @@ struct ReturnParser: ParserHelperProtocol {
 
         for parser in parsers {
             if parser.test(for: scanner) {
-                return AbstractSyntaxTree.ReturnNode(returnExpression: try parser.parse(from: scanner), mark: .unknown)
+                return AbstractSyntaxTree.ReturnNode(returnExpression: try parser.parse(from: scanner, ast: ast), mark: .unknown)
             }
         }
 

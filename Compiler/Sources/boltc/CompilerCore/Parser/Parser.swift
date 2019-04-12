@@ -72,7 +72,7 @@ extension Parser {
         let ast = AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName)
 
         while scanner.available {
-            ast.add(try parseNextExpression(from: scanner))
+            ast.add(try parseNextExpression(from: scanner, ast: ast))
         }
 
         ast.modules.forEach {
@@ -82,11 +82,11 @@ extension Parser {
         return ast
     }
 
-    func parseNextExpression(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parseNextExpression(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         // Loop through the parsers and find one that matches.
         for parser in parsers {
             if parser.test(for: scanner) {
-                return try parser.parse(from: scanner)
+                return try parser.parse(from: scanner, ast: ast)
             }
         }
 
@@ -106,7 +106,7 @@ extension Parser {
 
 protocol ParserHelperProtocol {
     func test(for scanner: Scanner<[Token]>) -> Bool
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node
 }
 
 

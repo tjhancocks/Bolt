@@ -29,7 +29,7 @@ struct ImportParser: ParserHelperProtocol {
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         let token = try scanner.advance()
         if case .keyword(.import, _) = token, case .identifier(let file, _)? = scanner.peek() {
             try scanner.advance()

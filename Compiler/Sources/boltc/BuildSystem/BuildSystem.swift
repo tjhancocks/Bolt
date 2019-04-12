@@ -50,6 +50,7 @@ extension BuildSystem {
     class Module {
         private(set) var file: File
         private(set) var buildSystem: BuildSystem
+        private(set) var ast: AbstractSyntaxTree?
 
         init(for file: File, in buildSystem: BuildSystem = .main) {
             self.file = file
@@ -85,6 +86,6 @@ extension BuildSystem.Module {
     }
 
     func build() throws {
-        let ast = try BuildSystem.Module.import(for: file)
+        ast = try BuildSystem.Module.import(for: file)
     }
 }

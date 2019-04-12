@@ -27,7 +27,7 @@ struct CallParser: ParserHelperProtocol {
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
 
         // Target function
         let idToken = try scanner.advance()
@@ -47,7 +47,7 @@ struct CallParser: ParserHelperProtocol {
 
             for parser in parsers {
                 if parser.test(for: scanner) {
-                    arguments.append(try parser.parse(from: scanner))
+                    arguments.append(try parser.parse(from: scanner, ast: ast))
 
                     if case .symbol(.comma, _)? = scanner.peek() {
                         try scanner.advance()

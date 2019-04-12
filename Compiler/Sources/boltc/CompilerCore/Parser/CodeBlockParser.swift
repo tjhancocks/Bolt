@@ -28,7 +28,7 @@ struct CodeBlockParser: ParserHelperProtocol {
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         try scanner.consume(expected: .symbol(symbol: .leftBrace, mark: .unknown))
 
         var expressions: [AbstractSyntaxTree.Node] = []
@@ -41,7 +41,7 @@ struct CodeBlockParser: ParserHelperProtocol {
 
             for parser in parsers {
                 if parser.test(for: scanner) {
-                    expressions.append(try parser.parse(from: scanner))
+                    expressions.append(try parser.parse(from: scanner, ast: ast))
                     continue nextExpression
                 }
             }

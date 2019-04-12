@@ -27,7 +27,7 @@ struct VariableParser: ParserHelperProtocol {
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         // Variable declaration prologue: let<
         try scanner.consume(expected:
             .keyword(keyword: .let, mark: .unknown),
@@ -35,7 +35,7 @@ struct VariableParser: ParserHelperProtocol {
         )
 
         // Variable return type
-        let type = try TypeParser.parse(from: scanner)
+        let type = try TypeParser.parse(from: scanner, ast: ast)
 
         // Post type: >
         try scanner.consume(expected:
@@ -51,11 +51,11 @@ struct VariableParser: ParserHelperProtocol {
         // Check if there is an initial value with it? If so then use it.
         if case .symbol(.equals, _)? = scanner.peek() {
             try scanner.advance()
-            
+
             let parsers = Parser.returnParsers
             for parser in parsers {
                 if parser.test(for: scanner) {
-                    let value = try parser.parse(from: scanner)
+                    let value = try parser.parse(from: scanner, ast: ast)
                     guard value.valueType == type.valueType else {
                         fatalError("Type mismatch")
                     }

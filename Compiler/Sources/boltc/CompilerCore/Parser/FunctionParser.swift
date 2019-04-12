@@ -27,7 +27,7 @@ struct FunctionParser: ParserHelperProtocol {
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Node {
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         // Function declaration prologue: func<
         try scanner.consume(expected:
             .keyword(keyword: .func, mark: .unknown),
@@ -35,7 +35,7 @@ struct FunctionParser: ParserHelperProtocol {
         )
 
         // Function return type
-        let returnType = try TypeParser.parse(from: scanner)
+        let returnType = try TypeParser.parse(from: scanner, ast: ast)
 
         // Post return type: >
         try scanner.consume(expected:
@@ -56,7 +56,7 @@ struct FunctionParser: ParserHelperProtocol {
                 break
             }
 
-            parameters.append(try ParameterParser.parse(from: scanner))
+            parameters.append(try ParameterParser.parse(from: scanner, ast: ast))
 
             if case .symbol(.comma, _)? = scanner.peek() {
                 try scanner.advance()
@@ -72,7 +72,7 @@ struct FunctionParser: ParserHelperProtocol {
         // Check if there is a code body attached? If so then add it.
         let codeBlockParser = CodeBlockParser()
         if codeBlockParser.test(for: scanner) {
-            declaration.add(try codeBlockParser.parse(from: scanner))
+            declaration.add(try codeBlockParser.parse(from: scanner, ast: ast))
         }
 
         // Return the function node.
