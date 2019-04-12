@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-indirect enum Type {
+indirect enum Type: Equatable {
     // Fundamental Types
     case none
     case int8

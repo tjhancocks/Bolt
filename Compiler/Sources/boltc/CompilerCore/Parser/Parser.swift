@@ -39,13 +39,15 @@ extension Parser {
     static var rootParsers: [ParserHelperProtocol] {
         return [
             FunctionParser(),
-            ImportParser()
+            ImportParser(),
+            VariableParser()
         ]
     }
 
     static var scopedParsers: [ParserHelperProtocol] {
         return returnParsers + [
-            ReturnParser()
+            ReturnParser(),
+            VariableParser()
         ]
     }
 

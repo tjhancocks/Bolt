@@ -18,23 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum Keyword: CaseIterable, Equatable {
-    case `func`, `return`, `import`, `let`
-}
+extension AbstractSyntaxTree {
+    class VariableNode: Node {
+        private(set) var name: String
+        private(set) var type: AbstractSyntaxTree.TypeNode
+        private(set) var initialValue: AbstractSyntaxTree.Node?
+        private(set) var mark: Mark
 
-extension Keyword: CustomStringConvertible {
+        override var valueType: Type {
+            return type.valueType
+        }
 
-    var text: String {
-        switch self {
-        case .func:         return "func"
-        case .return:       return "return"
-        case .import:       return "import"
-        case .let:          return "let"
+        init(name: String, type: AbstractSyntaxTree.TypeNode, initialValue: AbstractSyntaxTree.Node?, mark: Mark) {
+            self.name = name
+            self.mark = mark
+            self.type = type
+            self.initialValue = initialValue
+        }
+
+        override var description: String {
+            if let value = initialValue {
+                return "Variable '\(name)' of type '\(type)' and initial value \(value) [\(mark)]"
+            } else {
+                return "Variable '\(name)' of type '\(type)' [\(mark)]"
+            }
         }
     }
-
-    var description: String {
-        return "<\(text)>"
-    }
-
 }
+
