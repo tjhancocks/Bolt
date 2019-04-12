@@ -23,6 +23,10 @@ extension AbstractSyntaxTree {
         private(set) var value: String
         private(set) var mark: Mark
 
+        override var valueType: Type {
+            return .string
+        }
+
         init(value: String, mark: Mark) {
             self.value = value
             self.mark = mark

@@ -23,6 +23,10 @@ extension AbstractSyntaxTree {
         private(set) var value: Double
         private(set) var mark: Mark
 
+        override var valueType: Type {
+            return .int // TODO: This needs to be handled as soon as possible.
+        }
+
         init(value: Double, mark: Mark) {
             self.value = value
             self.mark = mark

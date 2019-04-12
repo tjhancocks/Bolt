@@ -25,6 +25,10 @@ extension AbstractSyntaxTree {
         private(set) var parameters: [AbstractSyntaxTree.ParameterNode]
         private(set) var mark: Mark
 
+        override var valueType: Type {
+            return returnType.valueType
+        }
+
         init(name: String, returnType: AbstractSyntaxTree.TypeNode, parameters: [AbstractSyntaxTree.ParameterNode], mark: Mark) {
             self.name = name
             self.mark = mark

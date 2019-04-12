@@ -73,6 +73,10 @@ extension AbstractSyntaxTree {
         private(set) var parent: AbstractSyntaxTree.Node?
         private(set) var children: [AbstractSyntaxTree.Node] = []
 
+        var valueType: Type {
+            return .none
+        }
+
         init(owner: AbstractSyntaxTree? = nil) {
             self.owner = owner
         }

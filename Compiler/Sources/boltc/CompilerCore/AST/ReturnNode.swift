@@ -23,6 +23,10 @@ extension AbstractSyntaxTree {
         private(set) var returnExpression: AbstractSyntaxTree.Node?
         private(set) var mark: Mark
 
+        override var valueType: Type {
+            return returnExpression?.valueType ?? .none
+        }
+
         init(returnExpression: AbstractSyntaxTree.Node?, mark: Mark) {
             self.returnExpression = returnExpression
             self.mark = mark

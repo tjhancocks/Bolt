@@ -22,6 +22,10 @@ extension AbstractSyntaxTree {
     class CodeBlockNode: Node {
         private(set) var mark: Mark
 
+        override var valueType: Type {
+            return children.last?.valueType ?? .none
+        }
+
         init(children: [AbstractSyntaxTree.Node], mark: Mark) {
             self.mark = mark
             super.init()
