@@ -22,6 +22,7 @@ indirect enum Type {
     // Fundamental Types
     case none
     case int8
+    case int
 
     // Nested
     case pointer(Type)
@@ -35,6 +36,7 @@ extension Type: CustomStringConvertible {
         switch self {
         case .none:                     return "None"
         case .int8:                     return "Int8"
+        case .int:                      return "Int"
         case .pointer(let type):        return "\(type.text)*"
         case .string:                   return resolvedType.text
         }
@@ -72,6 +74,7 @@ extension Type {
             // Fundamental Types
         case "None":            baseType = .none
         case "Int8":            baseType = .int8
+        case "Int":             baseType = .int
 
             // Complex Types
         case "String":          baseType = .string
