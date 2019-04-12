@@ -16,3 +16,11 @@ func<String> bar() {
 	foo(1, 2)
 	foo(bar(), "Hello", baz(1, 2))
 }
+
+func<Int8> baz() {
+	return 42
+}
+
+func<None> baz() {
+	return
+}
