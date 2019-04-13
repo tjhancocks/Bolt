@@ -46,7 +46,16 @@ class SymbolTable {
         print("Left scope")
     }
 
+    func find(symbolNamed name: String) -> AbstractSyntaxTree.Node? {
+        return currentScope.first(where: { $0.name == name })?.node
+    }
+
     func defineSymbol(name: String, node: AbstractSyntaxTree.Node) {
+        if let _ = find(symbolNamed: name) {
+            fatalError("Attempted to redefine symbol: \(node)")
+        }
+
+        // At this point we are allowed to create.
         print("+\(name)")
         currentScope.append(Symbol(name: name, fullName: name, node: node))
     }
