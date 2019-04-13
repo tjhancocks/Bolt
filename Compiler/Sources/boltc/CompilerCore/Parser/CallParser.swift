@@ -30,9 +30,9 @@ struct CallParser: ParserHelperProtocol {
     func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
 
         // Target function
-        let idToken = try scanner.advance()
-        guard case let .identifier(functionName, mark) = idToken else {
-            throw Parser.Error.unexpectedTokenEncountered(token: idToken)
+        let idParser = IdentifierParser()
+        guard idParser.test(for: scanner), let id = try idParser.parse(from: scanner, ast: ast) as? AbstractSyntaxTree.IdentifierNode else {
+            fatalError()
         }
 
         // Argument list
@@ -65,6 +65,7 @@ struct CallParser: ParserHelperProtocol {
 
         try scanner.consume(expected: .symbol(symbol: .rightParen, mark: .unknown))
 
-        return AbstractSyntaxTree.CallNode(functionName: functionName, arguments: arguments, mark: mark)
+        print("function:: \(id)")
+        return AbstractSyntaxTree.CallNode(function: id, arguments: arguments, mark: id.mark)
     }
 }

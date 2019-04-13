@@ -32,6 +32,12 @@ struct IdentifierParser: ParserHelperProtocol {
         guard case let .identifier(name, mark) = token else {
             throw Parser.Error.unrecognised(token: token)
         }
-        return AbstractSyntaxTree.IdentifierNode(identifier: name, mark: mark)
+
+        // Is there a definition for the identifier?
+        if let symbol = ast.symbolTable.find(symbolNamed: name) {
+            return AbstractSyntaxTree.IdentifierNode(identifier: name, referencing: symbol, mark: mark)
+        } else {
+            return AbstractSyntaxTree.IdentifierNode(identifier: name, mark: mark)
+        }
     }
 }

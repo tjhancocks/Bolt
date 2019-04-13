@@ -20,11 +20,11 @@
 
 extension AbstractSyntaxTree {
     class CallNode: Node {
-        private(set) var functionName: String
+        private(set) var function: AbstractSyntaxTree.IdentifierNode
         private(set) var mark: Mark
 
-        init(functionName: String, arguments: [AbstractSyntaxTree.Node], mark: Mark) {
-            self.functionName = functionName
+        init(function: AbstractSyntaxTree.IdentifierNode, arguments: [AbstractSyntaxTree.Node], mark: Mark) {
+            self.function = function
             self.mark = mark
             super.init()
             arguments.forEach {
@@ -33,7 +33,7 @@ extension AbstractSyntaxTree {
         }
 
         override var description: String {
-            return "Call '\(functionName)' with \(children.count) argument(s)"
+            return "Call '\(function.identifier)' with \(children.count) argument(s)"
         }
     }
 }

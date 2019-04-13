@@ -33,17 +33,17 @@ struct ImportParser: ParserHelperProtocol {
         let token = try scanner.advance()
         if case .keyword(.import, _) = token, case .identifier(let file, _)? = scanner.peek() {
             try scanner.advance()
-            let modules = try self.import(file: file)
-            if let firstModule = modules.first {
-                ast.add(modules: modules)
+            let imported = try self.import(file: file)
+            if let firstModule = imported.modules.first {
+                ast.add(modules: imported.modules, symbols: imported.symbolTable.rootSymbols)
                 return firstModule
             }
 
         } else if case .keyword(.import, _) = token, case .string(let file, _)? = scanner.peek() {
             try scanner.advance()
-            let modules = try self.import(file: file)
-            if let firstModule = modules.first {
-                ast.add(modules: modules)
+            let imported = try self.import(file: file)
+            if let firstModule = imported.modules.first {
+                ast.add(modules: imported.modules, symbols: imported.symbolTable.rootSymbols)
                 return firstModule
             }
             
@@ -52,7 +52,7 @@ struct ImportParser: ParserHelperProtocol {
         throw Parser.Error.unexpectedTokenEncountered(token: token)
     }
 
-    private func `import`(file: String) throws -> [AbstractSyntaxTree.ModuleNode] {
+    private func `import`(file: String) throws -> (modules: [AbstractSyntaxTree.ModuleNode], symbolTable: SymbolTable) {
         // Check for a user provided file first
 
         // Check for a library
@@ -61,9 +61,7 @@ struct ImportParser: ParserHelperProtocol {
                 let path = libPath.appendingPathComponent(file).appendingPathExtension("bolt")
                 let ast = try BuildSystem.Module.import(for: File(url: path))
 
-                return ast.modules.compactMap {
-                    $0 as? AbstractSyntaxTree.ModuleNode
-                }
+                return (ast.modules, ast.symbolTable)
             }
             catch let error {
                 print(error)

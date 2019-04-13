@@ -56,13 +56,15 @@ class AbstractSyntaxTree {
 
     func add(_ node: AbstractSyntaxTree.Node) {
         if let node = node as? AbstractSyntaxTree.ModuleNode {
-            add(modules: [node])
+            add(modules: [node], symbols: [])
         } else {
             visitNode.add(node)
         }
     }
 
-    func add(modules: [AbstractSyntaxTree.ModuleNode]) {
+    func add(modules: [AbstractSyntaxTree.ModuleNode], symbols: [SymbolTable.Symbol]) {
+        symbolTable.add(rootSymbols: symbols)
+        
         modules.enumerated().forEach { index, module in
             guard self.modules.contains(where: { $0.name == module.name }) == false else {
                 // Module already included. Skip it.

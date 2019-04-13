@@ -35,6 +35,19 @@ class SymbolTable {
         }
     }
 
+    private(set) var rootSymbols: [Symbol] {
+        get {
+            guard let scope = symbolScopes.first else {
+                fatalError("Missing symbol scope - aborting as compiler is in bad state")
+            }
+            return scope
+        }
+        set {
+            symbolScopes.removeFirst()
+            symbolScopes.insert(newValue, at: 0)
+        }
+    }
+
     func enterScope() {
         // We need to clone the existing scope.
         symbolScopes.append(currentScope)
@@ -58,6 +71,10 @@ class SymbolTable {
         // At this point we are allowed to create.
         print("+\(name)")
         currentScope.append(Symbol(name: name, fullName: name, node: node))
+    }
+
+    func add(rootSymbols: [SymbolTable.Symbol]) {
+        self.rootSymbols.insert(contentsOf: rootSymbols, at: 0)
     }
 
 }

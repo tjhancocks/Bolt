@@ -21,15 +21,25 @@
 extension AbstractSyntaxTree {
     class IdentifierNode: Node {
         private(set) var identifier: String
+        private(set) var reference: AbstractSyntaxTree.Node?
         private(set) var mark: Mark
 
-        init(identifier: String, mark: Mark) {
+        init(identifier: String, referencing node: AbstractSyntaxTree.Node? = nil, mark: Mark) {
             self.identifier = identifier
+            self.reference = node
             self.mark = mark
         }
 
+        override var valueType: Type {
+            return reference?.valueType ?? .none
+        }
+
         override var description: String {
-            return "Identifier '\(identifier)' [\(mark)]"
+            if let reference = reference {
+                return "Identifier '\(identifier)' [\(mark)] referencing \(reference)"
+            } else {
+                return "Identifier '\(identifier)' [\(mark)]"
+            }
         }
     }
 }
