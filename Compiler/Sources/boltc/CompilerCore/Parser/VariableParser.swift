@@ -59,7 +59,10 @@ struct VariableParser: ParserHelperProtocol {
                     guard value.valueType == type.valueType else {
                         fatalError("Type mismatch")
                     }
-                    return AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: value, mark: mark)
+
+                    let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: value, mark: mark)
+                    ast.symbolTable.defineSymbol(name: name, node: node)
+                    return node
                 }
             }
 
@@ -67,7 +70,9 @@ struct VariableParser: ParserHelperProtocol {
             fatalError()
         } else {
             // Return a variable node without a value.
-            return AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: nil, mark: mark)
+            let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: nil, mark: mark)
+            ast.symbolTable.defineSymbol(name: name, node: node)
+            return node
         }
     }
 }

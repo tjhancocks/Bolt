@@ -30,6 +30,7 @@ struct CodeBlockParser: ParserHelperProtocol {
 
     func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
         try scanner.consume(expected: .symbol(symbol: .leftBrace, mark: .unknown))
+        ast.symbolTable.enterScope()
 
         var expressions: [AbstractSyntaxTree.Node] = []
         let parsers = Parser.scopedParsers
@@ -51,6 +52,7 @@ struct CodeBlockParser: ParserHelperProtocol {
             throw Parser.Error.unexpectedTokenEncountered(token: token)
         }
 
+        ast.symbolTable.leaveScope()
         try scanner.consume(expected: .symbol(symbol: .rightBrace, mark: .unknown))
 
         return AbstractSyntaxTree.CodeBlockNode(children: expressions, mark: .unknown)

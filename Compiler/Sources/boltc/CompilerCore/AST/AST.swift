@@ -22,6 +22,7 @@ class AbstractSyntaxTree {
 
     private(set) var modules: [AbstractSyntaxTree.ModuleNode] = []
     private(set) var visitStack: [AbstractSyntaxTree.Node] = []
+    private(set) var symbolTable: SymbolTable = .init()
 
     var visitNode: AbstractSyntaxTree.Node {
         guard let node = visitStack.last else {
