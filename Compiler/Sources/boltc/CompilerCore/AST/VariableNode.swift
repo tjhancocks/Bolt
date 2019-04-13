@@ -18,18 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class VariableNode: Node {
+        private(set) var name: String
+        private(set) var type: AbstractSyntaxTree.TypeNode
+        private(set) var initialValue: AbstractSyntaxTree.Node?
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        override var valueType: Type {
+            return type.valueType
+        }
+
+        init(name: String, type: AbstractSyntaxTree.TypeNode, initialValue: AbstractSyntaxTree.Node?, mark: Mark) {
+            self.name = name
+            self.mark = mark
+            self.type = type
+            self.initialValue = initialValue
+        }
+
+        override var description: String {
+            if let value = initialValue {
+                return "Variable '\(name)' of type '\(type)' and initial value \(value) [\(mark)]"
+            } else {
+                return "Variable '\(name)' of type '\(type)' [\(mark)]"
+            }
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}

@@ -142,7 +142,7 @@ extension Lexer {
             }
         }
         
-        return TokenStream(tokens: discoveredTokens)
+        return TokenStream(file: file, tokens: discoveredTokens)
     }
 
 }

@@ -18,18 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class TypeNode: Node {
+        private(set) var type: Type
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        override var valueType: Type {
+            return type
+        }
+
+        init(type: Type, mark: Mark) {
+            self.type = type
+            self.mark = mark
+        }
+
+        override var description: String {
+            return type.description
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}
+

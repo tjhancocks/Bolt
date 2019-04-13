@@ -18,18 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
-
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+struct ReturnParser: ParserHelperProtocol {
+    func test(for scanner: Scanner<[Token]>) -> Bool {
+        if case .keyword(.return, _)? = scanner.peek() {
+            return true
+        } else {
+            return false
+        }
     }
-}
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
+        try scanner.consume(expected: .keyword(keyword: .return, mark: .unknown))
+
+        // Is there an expression following the return keyword?
+        let parsers = Parser.returnParsers
+
+        for parser in parsers {
+            if parser.test(for: scanner) {
+                return AbstractSyntaxTree.ReturnNode(returnExpression: try parser.parse(from: scanner, ast: ast), mark: .unknown)
+            }
+        }
+
+        return AbstractSyntaxTree.ReturnNode(returnExpression: nil, mark: .unknown)
     }
 }

@@ -18,18 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class FloatLiteralNode: Node {
+        private(set) var value: Double
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        override var valueType: Type {
+            return .int // TODO: This needs to be handled as soon as possible.
+        }
+
+        init(value: Double, mark: Mark) {
+            self.value = value
+            self.mark = mark
+        }
+
+        override var description: String {
+            return "Float '\(value)' [\(mark)]"
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}

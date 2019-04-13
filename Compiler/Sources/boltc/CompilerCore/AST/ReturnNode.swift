@@ -18,18 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class ReturnNode: Node {
+        private(set) var returnExpression: AbstractSyntaxTree.Node?
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        override var valueType: Type {
+            return returnExpression?.valueType ?? .none
+        }
+
+        init(returnExpression: AbstractSyntaxTree.Node?, mark: Mark) {
+            self.returnExpression = returnExpression
+            self.mark = mark
+        }
+
+        override var description: String {
+            if let expr = returnExpression {
+                return "Return using '\(expr)'"
+            } else {
+                return "Return nothing"
+            }
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}
+

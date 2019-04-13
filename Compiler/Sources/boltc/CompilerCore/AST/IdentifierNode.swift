@@ -18,18 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class IdentifierNode: Node {
+        private(set) var identifier: String
+        private(set) var reference: AbstractSyntaxTree.Node?
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        init(identifier: String, referencing node: AbstractSyntaxTree.Node? = nil, mark: Mark) {
+            self.identifier = identifier
+            self.reference = node
+            self.mark = mark
+        }
+
+        override var valueType: Type {
+            return reference?.valueType ?? .none
+        }
+
+        override var description: String {
+            if let reference = reference {
+                return "Identifier '\(identifier)' [\(mark)] referencing \(reference)"
+            } else {
+                return "Identifier '\(identifier)' [\(mark)]"
+            }
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}

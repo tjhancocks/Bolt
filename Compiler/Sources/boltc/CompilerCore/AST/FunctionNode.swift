@@ -18,18 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class FunctionNode: Node {
+        private(set) var name: String
+        private(set) var returnType: AbstractSyntaxTree.TypeNode
+        private(set) var parameters: [AbstractSyntaxTree.ParameterNode]
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        override var valueType: Type {
+            return returnType.valueType
+        }
+
+        init(name: String, returnType: AbstractSyntaxTree.TypeNode, parameters: [AbstractSyntaxTree.ParameterNode], mark: Mark) {
+            self.name = name
+            self.mark = mark
+            self.returnType = returnType
+            self.parameters = parameters
+        }
+
+        override var description: String {
+            return "Function '\(name)' returning '\(returnType)' and \(parameters.count) parameter(s) [\(mark)]"
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}

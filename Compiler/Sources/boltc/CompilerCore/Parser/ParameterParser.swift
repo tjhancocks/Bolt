@@ -18,18 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+struct ParameterParser {
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+    static func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.ParameterNode {
+        guard case let .identifier(name, mark) = try scanner.advance() else {
+            throw Error.expectedIdentifier
+        }
+
+        try scanner.consume(expected: .symbol(symbol: .colon, mark: .unknown))
+        let type = try TypeParser.parse(from: scanner, ast: ast)
+
+        return .init(name: name, type: type, mark: mark)
     }
+
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
+extension ParameterParser {
+    enum Error: Swift.Error {
+        case expectedIdentifier
     }
 }

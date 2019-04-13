@@ -21,20 +21,32 @@
 import Foundation
 
 /// The `File` structure is responsible for representing a file on disk.
-struct File {
+struct File: Equatable {
     private static let unknown: String = "(unknown file)"
 
 	private(set) var path: String
+    private(set) var url: URL?
     private(set) var virtual: Bool
 
-	/// Create a new file reference with the specified path.
-	///
-	/// The created file does not need to exist and can just be a reference to
-	/// a file that _should_ be created.
-	init(path: String) {
-		self.path = path
+    /// Create a new file reference with the specified path.
+    ///
+    /// The created file does not need to exist and can just be a reference to
+    /// a file that _should_ be created.
+    init(path: String) {
+        self.path = path
+        self.url = URL(fileURLWithPath: path)
         self.virtual = false
-	}
+    }
+
+    /// Create a new file reference with the specified URL.
+    ///
+    /// The created file does not need to exist and can just be a reference to
+    /// a file that _should_ be created.
+    init(url: URL) {
+        self.path = url.absoluteString
+        self.url = url
+        self.virtual = false
+    }
 
     /// Create a new virtual file.
     ///
@@ -56,7 +68,7 @@ struct File {
     /// The proposed module name of the file.
     var moduleName: String {
         var fileComponents = name.components(separatedBy: ".")
-        fileComponents.removeFirst()
+        fileComponents.removeLast()
         return fileComponents.joined(separator: ".")
     }
 }
@@ -65,7 +77,7 @@ struct File {
 
 extension File {
     func loadSource() throws -> Source {
-        guard let data = try? Data(contentsOf: URL(fileURLWithPath: path)) else {
+        guard let url = url, let data = try? Data(contentsOf: url) else {
             throw Error.fileNotFound(path: path)
         }
 
@@ -74,6 +86,12 @@ extension File {
         }
 
         return Source(text, file: self)
+    }
+
+    func validate() throws {
+        guard let url = url, let _ = try? Data(contentsOf: url) else {
+            throw Error.fileNotFound(path: path)
+        }
     }
 }
 

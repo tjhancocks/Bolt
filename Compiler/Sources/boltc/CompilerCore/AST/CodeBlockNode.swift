@@ -18,18 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class CodeBlockNode: Node {
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
-    }
-}
+        override var valueType: Type {
+            return children.last?.valueType ?? .none
+        }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
+        init(children: [AbstractSyntaxTree.Node], mark: Mark) {
+            self.mark = mark
+            super.init()
+            children.forEach {
+                add($0)
+            }
+        }
+
+        override var description: String {
+            return "CodeBlock"
+        }
     }
 }

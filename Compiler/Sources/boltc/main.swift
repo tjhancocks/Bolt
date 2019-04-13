@@ -20,37 +20,11 @@
 
 import Foundation
 
-// MARK: - Errors
-
-enum BoltError: Swift.Error {
-    case tooFewArguments
+do {
+    let compiler = Invocation(arguments: CommandLine.arguments)
+    try compiler.run()
 }
-
-extension BoltError: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
-        switch self {
-        case .tooFewArguments:
-            return (.critical, "too few arguments provided.")
-        }
-    }
-}
-
-// MARK: - Fetch command line arguments and make sure they are not empty.
-
-let arguments = CommandLine.arguments[1...]
-guard arguments.isEmpty == false else {
-    report(BoltError.tooFewArguments)
+catch let error {
+    report(error)
     exit(1)
-}
-
-// MARK: - Load files
-arguments.forEach { argument in
-    do {
-        let source = try File(path: argument).loadSource()
-        let lexer = Lexer(source: source)
-        try lexer.performAnalysis()
-    }
-    catch let error {
-        report(error)
-    }
 }

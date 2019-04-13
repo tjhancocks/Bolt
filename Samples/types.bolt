@@ -1,0 +1,7 @@
+// Type parsing test
+None
+Int8
+String
+Int8*
+Int8 *
+Int8***

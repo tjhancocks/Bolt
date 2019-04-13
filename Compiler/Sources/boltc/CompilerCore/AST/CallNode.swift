@@ -18,18 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class TokenStream {
-    private(set) var file: File
-    private(set) var tokens: [Token]
+extension AbstractSyntaxTree {
+    class CallNode: Node {
+        private(set) var function: AbstractSyntaxTree.IdentifierNode
+        private(set) var mark: Mark
 
-    init(file: File, tokens: [Token]) {
-        self.file = file
-        self.tokens = tokens
+        init(function: AbstractSyntaxTree.IdentifierNode, arguments: [AbstractSyntaxTree.Node], mark: Mark) {
+            self.function = function
+            self.mark = mark
+            super.init()
+            arguments.forEach {
+                add($0)
+            }
+        }
+
+        override var description: String {
+            return "Call '\(function.identifier)' with \(children.count) argument(s)"
+        }
     }
 }
 
-extension TokenStream {
-    var scanner: Scanner<[Token]> {
-        return Scanner(input: tokens)
-    }
-}
+

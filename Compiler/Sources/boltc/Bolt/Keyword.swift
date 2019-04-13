@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum Keyword: CaseIterable {
-    case `func`, `return`, `import`
+enum Keyword: CaseIterable, Equatable {
+    case `func`, `return`, `import`, `let`
 }
 
 extension Keyword: CustomStringConvertible {
@@ -29,6 +29,7 @@ extension Keyword: CustomStringConvertible {
         case .func:         return "func"
         case .return:       return "return"
         case .import:       return "import"
+        case .let:          return "let"
         }
     }
 

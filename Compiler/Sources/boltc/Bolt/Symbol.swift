@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum Symbol: Character, CaseIterable {
+enum Symbol: Character, Equatable, CaseIterable {
     case leftParen = "(", rightParen = ")"
     case leftAngle = "<", rightAngle = ">"
     case leftBracket = "[", rightBracket = "]"
