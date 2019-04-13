@@ -20,7 +20,7 @@
 
 class AbstractSyntaxTree {
 
-    private(set) var modules: [AbstractSyntaxTree.Node] = []
+    private(set) var modules: [AbstractSyntaxTree.ModuleNode] = []
     private(set) var visitStack: [AbstractSyntaxTree.Node] = []
 
     var visitNode: AbstractSyntaxTree.Node {
@@ -54,7 +54,21 @@ class AbstractSyntaxTree {
     }
 
     func add(_ node: AbstractSyntaxTree.Node) {
-        visitNode.add(node)
+        if let node = node as? AbstractSyntaxTree.ModuleNode {
+            add(modules: [node])
+        } else {
+            visitNode.add(node)
+        }
+    }
+
+    func add(modules: [AbstractSyntaxTree.ModuleNode]) {
+        modules.enumerated().forEach { index, module in
+            guard self.modules.contains(where: { $0.name == module.name }) == false else {
+                // Module already included. Skip it.
+                return
+            }
+            self.modules.insert(module, at: 0 + index)
+        }
     }
 }
 

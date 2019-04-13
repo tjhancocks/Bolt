@@ -74,11 +74,7 @@ extension Parser {
         while scanner.available {
             ast.add(try parseNextExpression(from: scanner, ast: ast))
         }
-
-        ast.modules.forEach {
-            print($0)
-        }
-
+        
         return ast
     }
 
