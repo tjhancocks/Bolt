@@ -112,23 +112,32 @@ extension Scanner where T.Element == Token {
 
     @discardableResult
     func consume(expected: T.Element...) throws -> [T.Element] {
-        var expected = expected
+        var expectedTokens = expected
         var matched: [T.Element] = []
 
-        while available, expected.isEmpty == false {
+        while available, let expect = expectedTokens.first {
             let item = advance()
-            guard expected.removeFirst().matches(item) else {
-//                throw Parser.Error.unexpectedTokenEncountered(token: item)
-                fatalError()
+            guard expectedTokens.removeFirst().matches(item) else {
+                throw Error.parserError(location: location,
+                                        reason: .expected(token: expect))
             }
             matched.append(item)
+        }
+
+        if matched.isEmpty, let expect = expected.first {
+            throw Error.parserError(location: location,
+                                    reason: .expected(token: expect))
         }
 
         return matched
     }
 
+    func peekLast() -> T.Element? {
+        return input.last
+    }
+
     var location: Mark {
-        return peek()?.mark ?? .unknown
+        return peek()?.mark ?? peekLast()?.mark ?? .unknown
     }
 
     var token: Token {

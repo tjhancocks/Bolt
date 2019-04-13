@@ -43,11 +43,17 @@ struct FunctionParser: ParserHelperProtocol {
         )
 
         // Function name
-        let functionNameToken = scanner.advance()
-        guard case let .identifier(name, mark) = functionNameToken else {
-            throw Error.parserError(location: scanner.location,
-                                    reason: .unexpectedTokenEncountered(token: functionNameToken))
+        guard case let .identifier(name, mark)? = scanner.peek() else {
+            if scanner.available {
+                throw Error.parserError(location: scanner.location,
+                                        reason: .unexpectedTokenEncountered(token: scanner.token))
+            } else {
+                throw Error.parserError(location: scanner.location,
+                                        reason: .unexpectedEndOfTokenStream)
+            }
+
         }
+        scanner.advance()
 
         // Parameters
         try scanner.consume(expected:.symbol(symbol: .leftParen, mark: .unknown))

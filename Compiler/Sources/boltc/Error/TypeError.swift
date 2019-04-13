@@ -18,28 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct Mark: Equatable {
-    let file: File
-    let line: UInt
-    let offset: UInt
-}
-
-extension Mark {
-    static var unknown: Mark {
-        return .init(file: .init(), line: .max, offset: .max)
-    }
-
-    var isUnknown: Bool {
-        return line == .max && offset == .max
-    }
-}
-
-extension Mark: CustomStringConvertible {
-    var description: String {
-        if self == .unknown {
-            return "memory"
-        } else {
-            return "\(file):\(line):\(offset)"
-        }
-    }
+enum TypeError {
+    case missingTypeInformation
+    case unrecognised(typeName: String)
+    case unrecognised(symbol: Symbol)
 }

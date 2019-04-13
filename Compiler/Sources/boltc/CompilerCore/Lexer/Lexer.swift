@@ -121,10 +121,10 @@ extension Lexer {
             // Consume any white space leading up to the next interesting thing.
             try consumeWhitespace(newlines: true)
 
-            updateMark()
-            guard let c = scanner.peek() else {
-                throw Error.lexerError(location: currentMark, reason: .unexpectedEndOfSource)
+            guard scanner.available, let c = scanner.peek() else {
+                break
             }
+            updateMark()
 
             if try test(LanguageSpec.current.commentPrefix, advanceOnMatch: true) {
                 try consumeComment()

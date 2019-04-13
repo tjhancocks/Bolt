@@ -61,13 +61,17 @@ extension Type {
 // MARK: - Interpret a sequence of Tokens as a type.
 
 extension Type {
-    static func resolve(from typeTokens: [Token]) throws -> Type {
+    static func resolve(from typeTokens: [Token], location: Mark = .unknown) throws -> Type {
+        guard typeTokens.isEmpty == false else {
+            throw Error.typeError(location: location, reason: .missingTypeInformation)
+        }
+
         var tokens: [Token] = typeTokens
         var baseType: Type = .int8
 
         // Base Type: Identifier
         guard case let .identifier(baseName, _) = tokens.removeFirst() else {
-            throw Error.badType(name: "?")
+            throw Error.typeError(location: location, reason: .missingTypeInformation)
         }
 
         switch baseName {
@@ -80,25 +84,19 @@ extension Type {
         case "String":          baseType = .string
 
             // Unknown Types
-        default:                throw Error.badType(name: baseName)
+        default:                throw Error.typeError(location: location, reason: .unrecognised(typeName: baseName))
         }
 
         // Nesting
-        while tokens.isEmpty == false {
-            if case .symbol(.star, _)? = tokens.first {
+        while tokens.isEmpty == false, case .symbol(let symbol, let location)? = tokens.first {
+            if symbol == .star {
                 baseType = .pointer(baseType)
             } else {
-                throw Error.badType(name: "?")
+                throw Error.typeError(location: location, reason: .unrecognised(symbol: symbol))
             }
             tokens.removeFirst()
         }
 
         return baseType
-    }
-}
-
-extension Type {
-    enum Error: Swift.Error {
-        case badType(name: String)
     }
 }

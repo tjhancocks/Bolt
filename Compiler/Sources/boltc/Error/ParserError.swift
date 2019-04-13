@@ -22,4 +22,5 @@ enum ParserError {
     case unexpectedEndOfTokenStream
     case unrecognised(token: Token)
     case unexpectedTokenEncountered(token: Token)
+    case expected(token: Token)
 }

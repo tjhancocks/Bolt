@@ -22,6 +22,7 @@ struct TypeParser: ParserHelperProtocol {
 
     // MARK: - Contextual Parser Helper
     static func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.TypeNode {
+        let location = scanner.location
         var typeTokens: [Token] = []
 
         // Extract each of the tokens
@@ -31,14 +32,17 @@ struct TypeParser: ParserHelperProtocol {
             }
 
             // Attempt to create a new type
-            if let token = scanner.peek(), let _ = try? Type.resolve(from: typeTokens + [token]) {
+            if let token = scanner.peek(), let _ = try? Type.resolve(from: typeTokens + [token], location: location) {
                 typeTokens.append(scanner.advance())
+            } else if typeTokens.isEmpty, let token = scanner.peek() {
+                typeTokens.append(token)
+                break
             } else {
                 break
             }
         }
 
-        return AbstractSyntaxTree.TypeNode(type: try Type.resolve(from: typeTokens), mark: .unknown)
+        return AbstractSyntaxTree.TypeNode(type: try Type.resolve(from: typeTokens, location: location), mark: location)
     }
 
     static func test(for scanner: Scanner<[Token]>) -> Bool {

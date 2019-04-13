@@ -32,7 +32,7 @@ enum Error: Swift.Error {
     case parserError(location: Mark, reason: ParserError)
 
     // Type error: file.bolt:1:1 -- type mismatch
-    case typeError(location: Mark, reason: String)
+    case typeError(location: Mark, reason: TypeError)
 }
 
 extension Error: CustomStringConvertible {
