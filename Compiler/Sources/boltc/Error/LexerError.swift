@@ -18,24 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct Mark: Equatable {
-    let file: File
-    let line: UInt
-    let offset: UInt
-}
-
-extension Mark {
-    static var unknown: Mark {
-        return .init(file: .init(), line: .max, offset: .max)
-    }
-
-    var isUnknown: Bool {
-        return line == .max && offset == .max
-    }
-}
-
-extension Mark: CustomStringConvertible {
-    var description: String {
-        return "\(file):\(line):\(offset)"
-    }
+enum LexerError {
+    case unexpectedEndOfSource
+    case invalidNumericToken(text: String)
+    case unexpectedCharacterEncountered(character: Character)
 }

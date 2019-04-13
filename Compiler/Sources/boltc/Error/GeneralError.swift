@@ -18,15 +18,34 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum GeneralError: Swift.Error {
+enum Error: Swift.Error {
+    // Avoid use
 	case unknownErrorOccurred
+
+    // Lexical analysis error: file.bolt:1:1 -- unexpected end of stream.
+    case lexerError(location: Mark, reason: LexerError)
+
+    // Syntax error: file.bolt:1:1 -- unexpected token encountered.
+    case parserError(location: Mark, reason: String)
+
+    // Type error: file.bolt:1:1 -- type mismatch
+    case typeError(location: Mark, reason: String)
 }
 
-extension GeneralError: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
+extension Error: CustomStringConvertible {
+    var description: String {
         switch self {
-        case .unknownErrorOccurred:
-            return (.critical, "An unknown error occurred!")
+        case .lexerError(let location, let reason):
+            return "Lexical analysis error: \(location) -- \(reason)"
+
+        case .parserError(let location, let reason):
+            return "Syntax error: \(location) -- \(reason)"
+
+        case .typeError(let location, let reason):
+            return "Type error: \(location) -- \(reason)"
+
+        default:
+            return "Unknown error occurred"
         }
     }
 }
