@@ -18,21 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct FloatLiteralParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .float? = scanner.peek() {
-            return true
-        } else {
-            return false
-        }
-    }
-
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        let token = scanner.advance()
-        guard case let .float(value, _, mark) = token else {
-            throw Error.parserError(location: scanner.location,
-                                    reason: .unrecognised(token: token))
-        }
-        return AbstractSyntaxTree.FloatLiteralNode(value: value, mark: mark)
-    }
+enum ParserError {
+    case unexpectedEndOfTokenStream
+    case unrecognised(token: Token)
+    case unexpectedTokenEncountered(token: Token)
 }

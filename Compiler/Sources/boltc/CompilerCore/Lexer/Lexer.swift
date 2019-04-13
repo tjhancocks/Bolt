@@ -80,7 +80,7 @@ extension Lexer {
             throw Error.lexerError(location: currentMark, reason: .unexpectedEndOfSource)
         }
         handle(string: string)
-        return try scanner.advance(by: n)
+        return scanner.advance(by: n)
     }
 
     private func test(_ next: String, advanceOnMatch: Bool = false) throws -> Bool {

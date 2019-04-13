@@ -49,9 +49,9 @@ class Scanner<T> where T: Collection {
 
     /// Check the value of the element is equal to the specified value.
     @discardableResult
-    func advance(by n: Int = 1) throws -> T.Element {
+    func advance(by n: Int = 1) -> T.Element {
         guard let offset = input.index(index, offsetBy: n, limitedBy: input.endIndex) else {
-            throw Error.scannerOutOfBounds
+            fatalError("Stream scanner has gone out of bounds! Aborting now.")
         }
         let item = input[index]
         index = offset
@@ -62,13 +62,5 @@ class Scanner<T> where T: Collection {
     /// to consume.
     var available: Bool {
         return index < input.endIndex
-    }
-}
-
-// MARK: - Errors
-
-extension Scanner {
-    enum Error: Swift.Error {
-        case scannerOutOfBounds
     }
 }

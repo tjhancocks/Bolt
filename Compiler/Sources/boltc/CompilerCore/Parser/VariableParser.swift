@@ -43,14 +43,15 @@ struct VariableParser: ParserHelperProtocol {
         )
 
         // Variable name
-        let variableNameToken = try scanner.advance()
+        let variableNameToken = scanner.advance()
         guard case let .identifier(name, mark) = variableNameToken else {
-            throw Parser.Error.unexpectedTokenEncountered(token: variableNameToken)
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: variableNameToken))
         }
 
         // Check if there is an initial value with it? If so then use it.
         if case .symbol(.equals, _)? = scanner.peek() {
-            try scanner.advance()
+            scanner.advance()
 
             let parsers = Parser.returnParsers
             for parser in parsers {

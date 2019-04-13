@@ -22,11 +22,14 @@ enum Error: Swift.Error {
     // Avoid use
 	case unknownErrorOccurred
 
+    // Source Error: file.bolt -- file not found
+    case fileError(reason: FileError)
+
     // Lexical analysis error: file.bolt:1:1 -- unexpected end of stream.
     case lexerError(location: Mark, reason: LexerError)
 
     // Syntax error: file.bolt:1:1 -- unexpected token encountered.
-    case parserError(location: Mark, reason: String)
+    case parserError(location: Mark, reason: ParserError)
 
     // Type error: file.bolt:1:1 -- type mismatch
     case typeError(location: Mark, reason: String)

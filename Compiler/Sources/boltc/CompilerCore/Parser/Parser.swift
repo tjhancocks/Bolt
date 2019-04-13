@@ -89,10 +89,10 @@ extension Parser {
         // If we get here, then we must assume that we could not recognise
         // the sequence of tokens
         if let token = scanner.peek() {
-            throw Error.unrecognised(token: token)
+            throw Error.parserError(location: scanner.location, reason: .unrecognised(token: token))
         }
         else {
-            throw Error.unexpectedEndOfTokenStream
+            throw Error.parserError(location: scanner.location, reason: .unexpectedEndOfTokenStream)
         }
     }
 
@@ -116,9 +116,10 @@ extension Scanner where T.Element == Token {
         var matched: [T.Element] = []
 
         while available, expected.isEmpty == false {
-            let item = try advance()
+            let item = advance()
             guard expected.removeFirst().matches(item) else {
-                throw Parser.Error.unexpectedTokenEncountered(token: item)
+//                throw Parser.Error.unexpectedTokenEncountered(token: item)
+                fatalError()
             }
             matched.append(item)
         }
@@ -126,27 +127,15 @@ extension Scanner where T.Element == Token {
         return matched
     }
 
-}
-
-// MARK: - Errors
-
-extension Parser {
-    enum Error: Swift.Error {
-        case unexpectedEndOfTokenStream
-        case unrecognised(token: Token)
-        case unexpectedTokenEncountered(token: Token)
+    var location: Mark {
+        return peek()?.mark ?? .unknown
     }
-}
 
-extension Parser.Error: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
-        switch self {
-        case .unexpectedEndOfTokenStream:
-            return (.error, "Parser unexpectedly encountered end of token stream.")
-        case let .unrecognised(token):
-            return (.error, "Parser encountered an unrecognised token: \(token)")
-        case let .unexpectedTokenEncountered(token):
-            return (.error, "Unexpected token encountered: \(token)")
+    var token: Token {
+        guard let token = peek() else {
+            fatalError("Attempted to access a token that has been considered presented, but isn't.")
         }
+        return token
     }
+
 }

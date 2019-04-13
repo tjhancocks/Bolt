@@ -48,8 +48,8 @@ struct CodeBlockParser: ParserHelperProtocol {
             }
 
             // Reaching this point is an indication of something not being handled.
-            let token = try scanner.advance()
-            throw Parser.Error.unexpectedTokenEncountered(token: token)
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: scanner.token))
         }
 
         ast.symbolTable.leaveScope()

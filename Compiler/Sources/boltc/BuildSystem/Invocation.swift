@@ -33,12 +33,12 @@ class Invocation {
 
         // Work through the arguments and setup the build system.
         while arguments.available {
-            let arg = try arguments.advance()
+            let arg = arguments.advance()
 
             switch arg {
                 // Check for a flag
             case "--version":       BuildSystem.main.emitVersion = true
-            case "--library":       try BuildSystem.main.add(libraryPath: try arguments.advance())
+            case "--library":       try BuildSystem.main.add(libraryPath: arguments.advance())
 
                 // If the flag was not found, then attempt to add a new file/module
             default:

@@ -32,7 +32,7 @@ struct TypeParser: ParserHelperProtocol {
 
             // Attempt to create a new type
             if let token = scanner.peek(), let _ = try? Type.resolve(from: typeTokens + [token]) {
-                typeTokens.append(try scanner.advance())
+                typeTokens.append(scanner.advance())
             } else {
                 break
             }

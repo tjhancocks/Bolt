@@ -21,7 +21,7 @@
 struct ParameterParser {
 
     static func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.ParameterNode {
-        guard case let .identifier(name, mark) = try scanner.advance() else {
+        guard case let .identifier(name, mark) = scanner.advance() else {
             throw Error.expectedIdentifier
         }
 

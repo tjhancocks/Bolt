@@ -30,9 +30,9 @@ struct ImportParser: ParserHelperProtocol {
     }
 
     func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        let token = try scanner.advance()
+        let token = scanner.advance()
         if case .keyword(.import, _) = token, case .identifier(let file, _)? = scanner.peek() {
-            try scanner.advance()
+            scanner.advance()
             let imported = try self.import(file: file)
             if let firstModule = imported.modules.first {
                 ast.add(modules: imported.modules, symbols: imported.symbolTable.rootSymbols)
@@ -40,7 +40,7 @@ struct ImportParser: ParserHelperProtocol {
             }
 
         } else if case .keyword(.import, _) = token, case .string(let file, _)? = scanner.peek() {
-            try scanner.advance()
+            scanner.advance()
             let imported = try self.import(file: file)
             if let firstModule = imported.modules.first {
                 ast.add(modules: imported.modules, symbols: imported.symbolTable.rootSymbols)
@@ -49,7 +49,8 @@ struct ImportParser: ParserHelperProtocol {
             
         }
 
-        throw Parser.Error.unexpectedTokenEncountered(token: token)
+        throw Error.parserError(location: scanner.location,
+                                reason: .unexpectedTokenEncountered(token: token))
     }
 
     private func `import`(file: String) throws -> (modules: [AbstractSyntaxTree.ModuleNode], symbolTable: SymbolTable) {

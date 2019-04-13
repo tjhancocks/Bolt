@@ -43,9 +43,10 @@ struct FunctionParser: ParserHelperProtocol {
         )
 
         // Function name
-        let functionNameToken = try scanner.advance()
+        let functionNameToken = scanner.advance()
         guard case let .identifier(name, mark) = functionNameToken else {
-            throw Parser.Error.unexpectedTokenEncountered(token: functionNameToken)
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: functionNameToken))
         }
 
         // Parameters
@@ -59,7 +60,7 @@ struct FunctionParser: ParserHelperProtocol {
             parameters.append(try ParameterParser.parse(from: scanner, ast: ast))
 
             if case .symbol(.comma, _)? = scanner.peek() {
-                try scanner.advance()
+                scanner.advance()
             } else {
                 break
             }
