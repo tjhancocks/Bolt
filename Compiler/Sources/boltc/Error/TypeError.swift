@@ -22,4 +22,5 @@ enum TypeError {
     case missingTypeInformation
     case unrecognised(typeName: String)
     case unrecognised(symbol: Symbol)
+    case mismatch(expected: Type, got: Type)
 }

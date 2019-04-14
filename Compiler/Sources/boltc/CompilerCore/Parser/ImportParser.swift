@@ -70,6 +70,6 @@ struct ImportParser: ParserHelperProtocol {
             }
         }
 
-        fatalError("Failed to import \(file)")
+        throw Error.fileError(reason: .importFailed(fileNamed: file))
     }
 }

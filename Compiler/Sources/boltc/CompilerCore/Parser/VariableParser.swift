@@ -58,7 +58,8 @@ struct VariableParser: ParserHelperProtocol {
                 if parser.test(for: scanner) {
                     let value = try parser.parse(from: scanner, ast: ast)
                     guard value.valueType == type.valueType else {
-                        fatalError("Type mismatch")
+                        throw Error.typeError(location: scanner.location,
+                                              reason: .mismatch(expected: type.valueType, got: value.valueType))
                     }
 
                     let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: value, mark: mark)

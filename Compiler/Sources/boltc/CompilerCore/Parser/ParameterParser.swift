@@ -21,9 +21,11 @@
 struct ParameterParser {
 
     static func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.ParameterNode {
-        guard case let .identifier(name, mark) = scanner.advance() else {
-            throw Error.expectedIdentifier
+        guard scanner.available, case let .identifier(name, mark)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .identifier(text: "parameter_label", mark: scanner.location)))
         }
+        scanner.advance()
 
         try scanner.consume(expected: .symbol(symbol: .colon, mark: .unknown))
         let type = try TypeParser.parse(from: scanner, ast: ast)
@@ -31,10 +33,4 @@ struct ParameterParser {
         return .init(name: name, type: type, mark: mark)
     }
 
-}
-
-extension ParameterParser {
-    enum Error: Swift.Error {
-        case expectedIdentifier
-    }
 }
