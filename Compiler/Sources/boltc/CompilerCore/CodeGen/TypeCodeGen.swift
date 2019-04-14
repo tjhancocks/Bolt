@@ -20,32 +20,19 @@
 
 import LLVM
 
-class CodeGen {
-    private var module: LLVM.Module
-    private var builder: LLVM.IRBuilder
-    private(set) var ast: AbstractSyntaxTree
+extension Type {
+    var IRType: IRType {
+        switch resolvedType {
+            // Special Types
+        case .none:                         return VoidType()
 
-    init(ast: AbstractSyntaxTree) {
-        let module = LLVM.Module(name: ast.initialModule.name)
-        self.ast = ast
-        self.module = module
-        self.builder = .init(module: module)
-    }
-}
+            // Basic types
+        case .int:                          return IntType.int64
+        case .int8:                         return IntType.int8
+        case .pointer(let subtype):         return PointerType(pointee: subtype.IRType)
 
-extension CodeGen {
-    func generateLLVMModule() throws -> LLVM.Module {
-        try ast.walk { node in
-            guard let codeGenNode = node as? CodeGenNode else {
-//                fatalError("AbstractSyntaxTree node encountered that does not support code generation. Node was \(type(of: node))")
-                return
-            }
-            try codeGenNode.generate(for: builder)
+        default:
+            fatalError("There is currently no IRType mapped to \(self).")
         }
-        return module
     }
-}
-
-protocol CodeGenNode {
-    func generate(for builder: LLVM.IRBuilder) throws
 }

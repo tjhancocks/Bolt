@@ -20,32 +20,17 @@
 
 import LLVM
 
-class CodeGen {
-    private var module: LLVM.Module
-    private var builder: LLVM.IRBuilder
-    private(set) var ast: AbstractSyntaxTree
-
-    init(ast: AbstractSyntaxTree) {
-        let module = LLVM.Module(name: ast.initialModule.name)
-        self.ast = ast
-        self.module = module
-        self.builder = .init(module: module)
-    }
-}
-
-extension CodeGen {
-    func generateLLVMModule() throws -> LLVM.Module {
-        try ast.walk { node in
-            guard let codeGenNode = node as? CodeGenNode else {
-//                fatalError("AbstractSyntaxTree node encountered that does not support code generation. Node was \(type(of: node))")
-                return
-            }
-            try codeGenNode.generate(for: builder)
+extension AbstractSyntaxTree.FunctionNode: CodeGenNode {
+    func generate(for builder: IRBuilder) throws {
+        // Check if the function has already been defined/declared.
+        if let _ = builder.module.function(named: name) {
+            print("Note: Already generated function \(name)")
+            return
         }
-        return module
-    }
-}
 
-protocol CodeGenNode {
-    func generate(for builder: LLVM.IRBuilder) throws
+        // It hasn't so build it.
+        let functionType = FunctionType(argTypes: parameters.map({ $0.valueType.IRType }),
+                                        returnType: valueType.IRType)
+        let function = builder.addFunction(name, type: functionType)
+    }
 }

@@ -102,6 +102,7 @@ extension BuildSystem.Module {
         try sema.performAnalysis()
 
         let generator = CodeGen(ast: ast)
-        _ = try generator.generateLLVMModule()
+        let module = try generator.generateLLVMModule()
+        module.dump()
     }
 }
