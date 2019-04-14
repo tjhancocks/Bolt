@@ -36,6 +36,9 @@ enum Error: Swift.Error {
 
     // Type error: file.bolt:1:1 -- type mismatch
     case typeError(location: Mark, reason: TypeError)
+
+    // Semantic error: file.bolt:1:1 -- illegal use of ...
+    case semaError(location: Mark, reason: SemaError)
 }
 
 extension Error: CustomStringConvertible {
