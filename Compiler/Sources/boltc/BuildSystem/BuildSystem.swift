@@ -26,6 +26,7 @@ class BuildSystem {
     private(set) var modules: [Module] = []
 
     // Build flags
+    var emitValidationResponse: Bool = false
     var emitVersion: Bool = false
     private(set) var libraryPaths: [URL] = []
 
@@ -65,6 +66,11 @@ extension BuildSystem {
     func run() throws {
         // Some flags/options require an immediate action, or even termination
         // of the compiler.
+        if emitValidationResponse {
+            print("boltc built ok")
+            exit(0)
+        }
+
         if emitVersion {
             print("Bolt Compiler")
             print(" boltc v0.0.1")
