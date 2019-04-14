@@ -40,6 +40,9 @@ class Invocation {
             case "--version":       BuildSystem.main.emitVersion = true
             case "--library":       try BuildSystem.main.add(libraryPath: arguments.advance())
 
+                // Only used for CI checks
+            case "--validate-bolt": BuildSystem.main.emitValidationResponse = true
+
                 // If the flag was not found, then attempt to add a new file/module
             default:
                 let file = File(path: arg)

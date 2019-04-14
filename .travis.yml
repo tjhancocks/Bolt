@@ -18,9 +18,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-.PHONY: all
-all: compiler-test
-
-.PHONY: compiler-test
-compiler-test:
-	sh support/travis/compiler-build-test.sh
+language:
+  - swift
+osx_image: xcode10.2
+script:
+  - make compiler-test

@@ -18,9 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-.PHONY: all
-all: compiler-test
+echo "Building bolt compiler and checking for valid response."
 
-.PHONY: compiler-test
-compiler-test:
-	sh support/travis/compiler-build-test.sh
+# Switch to the compiler directory and then build and run boltc.
+cd Compiler
+RESULT=$(swift run boltc --validate-bolt)
+
+# Check if the result contains the required response text.
+if [[ ${RESULT} == *"boltc built ok"* ]]; then
+	echo "Bolt compiler built successfully."
+	exit 0
+else
+	echo "Bolt compiler built with errors."
+	exit 1
+fi
