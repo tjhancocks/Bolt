@@ -32,5 +32,10 @@ extension AbstractSyntaxTree.FunctionNode: CodeGenNode {
         let functionType = FunctionType(argTypes: parameters.map({ $0.valueType.IRType }),
                                         returnType: valueType.IRType)
         let function = builder.addFunction(name, type: functionType)
+
+        if children.isEmpty == false {
+            let entry = function.appendBasicBlock(named: "entry")
+            builder.positionAtEnd(of: entry)
+        }
     }
 }
