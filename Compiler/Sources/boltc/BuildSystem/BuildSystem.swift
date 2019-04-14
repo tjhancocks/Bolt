@@ -87,5 +87,12 @@ extension BuildSystem.Module {
 
     func build() throws {
         ast = try BuildSystem.Module.import(for: file)
+
+        guard let ast = ast else {
+            fatalError("The compiler has lost track of the AbstractSyntaxTree. This should not happen.")
+        }
+
+        let sema = Sema(ast: ast)
+        try sema.performAnalysis()
     }
 }
