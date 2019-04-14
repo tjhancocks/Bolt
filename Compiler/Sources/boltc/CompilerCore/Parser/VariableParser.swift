@@ -63,7 +63,7 @@ struct VariableParser: ParserHelperProtocol {
                     }
 
                     let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: value, mark: mark)
-                    ast.symbolTable.defineSymbol(name: name, node: node)
+                    try ast.symbolTable.defineSymbol(name: name, node: node, location: mark)
                     return node
                 }
             }
@@ -73,7 +73,7 @@ struct VariableParser: ParserHelperProtocol {
         } else {
             // Return a variable node without a value.
             let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: nil, mark: mark)
-            ast.symbolTable.defineSymbol(name: name, node: node)
+            try ast.symbolTable.defineSymbol(name: name, node: node, location: mark)
             return node
         }
     }

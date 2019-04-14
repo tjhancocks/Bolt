@@ -75,15 +75,15 @@ struct FunctionParser: ParserHelperProtocol {
 
         // Build the declaration
         let declaration = AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, parameters: parameters, mark: mark)
-        ast.symbolTable.defineSymbol(name: name, node: declaration)
+        try ast.symbolTable.defineSymbol(name: name, node: declaration, location: mark)
 
         // Check if there is a code body attached? If so then add it.
         let codeBlockParser = CodeBlockParser()
         if codeBlockParser.test(for: scanner) {
             ast.symbolTable.enterScope()
 
-            parameters.forEach {
-                ast.symbolTable.defineSymbol(name: $0.name, node: $0)
+            try parameters.forEach {
+                try ast.symbolTable.defineSymbol(name: $0.name, node: $0, location: mark)
             }
 
             declaration.add(try codeBlockParser.parse(from: scanner, ast: ast))

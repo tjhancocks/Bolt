@@ -22,6 +22,7 @@ import Foundation
 
 enum FileError {
     case notFound(file: File)
+    case badEncoding(file: File)
     case outOfBounds(file: File)
     case importFailed(fileNamed: String)
 }

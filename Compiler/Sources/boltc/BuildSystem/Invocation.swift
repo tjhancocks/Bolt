@@ -53,12 +53,3 @@ class Invocation {
     }
 
 }
-
-// MARK: - Errors
-
-extension Invocation {
-    enum Error: Swift.Error {
-        case expectedArgument
-        case tooFewArguments
-    }
-}

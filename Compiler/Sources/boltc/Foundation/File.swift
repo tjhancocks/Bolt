@@ -78,11 +78,11 @@ struct File: Equatable {
 extension File {
     func loadSource() throws -> Source {
         guard let url = url, let data = try? Data(contentsOf: url) else {
-            throw Error.fileNotFound(path: path)
+            throw Error.fileError(reason: .notFound(file: self))
         }
 
         guard let text = String(data: data, encoding: .utf8) else {
-            throw Error.badFileEncoding(path: path)
+            throw Error.fileError(reason: .badEncoding(file: self))
         }
 
         return Source(text, file: self)
@@ -90,7 +90,7 @@ extension File {
 
     func validate() throws {
         guard let url = url, let _ = try? Data(contentsOf: url) else {
-            throw Error.fileNotFound(path: path)
+            throw Error.fileError(reason: .notFound(file: self))
         }
     }
 }
@@ -100,26 +100,5 @@ extension File {
 extension File: CustomStringConvertible {
     var description: String {
         return name
-    }
-}
-
-// MARK: - Error
-
-extension File {
-    enum Error: Swift.Error {
-        case fileNotFound(path: String)
-        case badFileEncoding(path: String)
-    }
-}
-
-extension File.Error: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
-        switch self {
-        case let .fileNotFound(path):
-            return (.error, "File not found: \(path)")
-
-        case let .badFileEncoding(path):
-            return (.error, "File encoding was not UTF-8: \(path)")
-        }
     }
 }

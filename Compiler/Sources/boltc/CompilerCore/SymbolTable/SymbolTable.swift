@@ -51,25 +51,25 @@ class SymbolTable {
     func enterScope() {
         // We need to clone the existing scope.
         symbolScopes.append(currentScope)
-        print("Entered scope")
     }
 
-    func leaveScope() {
+    func leaveScope(file: StaticString = #file, line: UInt = #line) {
+        guard symbolScopes.isEmpty == false else {
+            fatalError("The compiler attempted to leave the main scope of the program. This will most likely be due to an imbalance in the enter/leave calls in the SymbolTable around \(file):\(line)")
+        }
         _ = symbolScopes.popLast()
-        print("Left scope")
     }
 
     func find(symbolNamed name: String) -> AbstractSyntaxTree.Node? {
         return currentScope.first(where: { $0.name == name })?.node
     }
 
-    func defineSymbol(name: String, node: AbstractSyntaxTree.Node) {
-        if let _ = find(symbolNamed: name) {
-            fatalError("Attempted to redefine symbol: \(node)")
+    func defineSymbol(name: String, node: AbstractSyntaxTree.Node, location: Mark) throws {
+        if let original = find(symbolNamed: name) {
+            throw Error.parserError(location: location, reason: .redefinition(of: original, with: node))
         }
 
         // At this point we are allowed to create.
-        print("+\(name)")
         currentScope.append(Symbol(name: name, fullName: name, node: node))
     }
 

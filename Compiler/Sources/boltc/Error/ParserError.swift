@@ -23,4 +23,5 @@ enum ParserError {
     case unrecognised(token: Token)
     case unexpectedTokenEncountered(token: Token)
     case expected(token: Token)
+    case redefinition(of: AbstractSyntaxTree.Node, with: AbstractSyntaxTree.Node)
 }

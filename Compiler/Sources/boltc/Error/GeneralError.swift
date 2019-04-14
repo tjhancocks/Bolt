@@ -19,8 +19,11 @@
 // SOFTWARE.
 
 enum Error: Swift.Error {
-    // Avoid use
-	case unknownErrorOccurred
+    // Too few arguments given to the compiler.
+    case tooFewArguments
+
+    // Compiler expected an argument but found nothing
+    case expectedArgument(for: String)
 
     // Source Error: file.bolt -- file not found
     case fileError(reason: FileError)
