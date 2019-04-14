@@ -22,16 +22,29 @@ import LLVM
 
 class CodeGen {
     private var module: LLVM.Module
+    private var builder: LLVM.IRBuilder
     private(set) var ast: AbstractSyntaxTree
 
     init(ast: AbstractSyntaxTree) {
+        let module = LLVM.Module(name: ast.initialModule.name)
         self.ast = ast
-        self.module = .init(name: ast.initialModule.name)
+        self.module = module
+        self.builder = .init(module: module)
     }
 }
 
 extension CodeGen {
     func generateLLVMModule() throws -> LLVM.Module {
+        try ast.walk { node in
+            guard let codeGenNode = node as? CodeGenNode else {
+                fatalError("AbstractSyntaxTree node encountered that does not support code generation. Node was \(type(of: node))")
+            }
+            try codeGenNode.generate(for: builder)
+        }
         return module
     }
+}
+
+protocol CodeGenNode {
+    func generate(for builder: LLVM.IRBuilder) throws
 }

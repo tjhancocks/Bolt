@@ -33,15 +33,22 @@ class AbstractSyntaxTree {
     }
 
     init(mainModuleName moduleName: String) {
-        let initialModule = ModuleNode(named: moduleName, owner: self)
+        let initialModule = ModuleNode(named: moduleName)
         self.initialModule = initialModule
         self.modules.append(initialModule)
         self.visitStack.append(initialModule)
+        self.initialModule.set(owner: self)
     }
 
     func traverse(_ body: (AbstractSyntaxTree.Node) throws -> [AbstractSyntaxTree.Node]) rethrows {
         try modules.forEach {
             _ = try $0.traverse(body)
+        }
+    }
+
+    func walk(_ body: (AbstractSyntaxTree.Node) throws -> Void) rethrows {
+        try modules.forEach {
+            try $0.walk(body)
         }
     }
 
@@ -110,6 +117,10 @@ extension AbstractSyntaxTree {
             self.location = location
         }
 
+        func set(owner: AbstractSyntaxTree) {
+            self.owner = owner
+        }
+
         var description: String {
             return "AST Node"
         }
@@ -130,6 +141,13 @@ extension AbstractSyntaxTree.Node {
         }
         children = newChildren
     }
+
+    func walk(_ body: (AbstractSyntaxTree.Node) throws -> Void) rethrows {
+        try body(self)
+        try children.forEach {
+            try $0.walk(body)
+        }
+    }
 }
 
 
@@ -139,9 +157,8 @@ extension AbstractSyntaxTree {
     class ModuleNode: Node {
         private(set) var name: String
 
-        init(named name: String, owner: AbstractSyntaxTree) {
+        init(named name: String) {
             self.name = name
-            super.init(owner: owner)
         }
 
         override var description: String {
