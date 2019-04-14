@@ -18,25 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class CallNode: Node {
-        private(set) var function: AbstractSyntaxTree.IdentifierNode
-        private(set) var mark: Mark
+class Sema {
+    private(set) var ast: AbstractSyntaxTree
 
-        init(function: AbstractSyntaxTree.IdentifierNode, arguments: [AbstractSyntaxTree.Node], mark: Mark) {
-            self.function = function
-            self.mark = mark
-            super.init()
-            self.set(location: mark)
-            arguments.forEach {
-                add($0)
+    init(ast: AbstractSyntaxTree) {
+        self.ast = ast
+    }
+}
+
+extension Sema {
+    func performAnalysis() throws {
+        try ast.traverse { node in
+            if let semaNode = node as? SemaNode {
+                return try semaNode.performSemanticAnalysis()
+            } else {
+                return [node]
             }
-        }
-
-        override var description: String {
-            return "Call '\(function.identifier)' with \(children.count) argument(s)"
         }
     }
 }
 
-
+protocol SemaNode {
+    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node]
+}

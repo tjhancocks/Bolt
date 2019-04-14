@@ -18,25 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class CallNode: Node {
-        private(set) var function: AbstractSyntaxTree.IdentifierNode
-        private(set) var mark: Mark
+extension AbstractSyntaxTree.CallNode: SemaNode {
 
-        init(function: AbstractSyntaxTree.IdentifierNode, arguments: [AbstractSyntaxTree.Node], mark: Mark) {
-            self.function = function
-            self.mark = mark
-            super.init()
-            self.set(location: mark)
-            arguments.forEach {
-                add($0)
+    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node] {
+        guard let function = function.reference as? AbstractSyntaxTree.FunctionNode else {
+            throw Error.semaError(location: location, reason: .expectedFunctionForCall)
+        }
+
+        guard function.parameters.count == children.count else {
+            throw Error.semaError(location: location,
+                                  reason: .incorrectArgumentCount(expected: function.parameters.count, got: children.count))
+        }
+
+        try zip(function.parameters, children).enumerated().forEach { offset, parameter in
+            guard parameter.0.valueType == parameter.1.valueType else {
+                throw Error.semaError(location: location,
+                                      reason: .argumentTypeMismatch(expected: parameter.0.valueType, got: parameter.1.valueType, at: offset))
             }
         }
 
-        override var description: String {
-            return "Call '\(function.identifier)' with \(children.count) argument(s)"
-        }
+        return [self]
     }
+
 }
-
-

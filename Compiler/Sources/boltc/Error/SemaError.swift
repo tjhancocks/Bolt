@@ -18,25 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class CallNode: Node {
-        private(set) var function: AbstractSyntaxTree.IdentifierNode
-        private(set) var mark: Mark
-
-        init(function: AbstractSyntaxTree.IdentifierNode, arguments: [AbstractSyntaxTree.Node], mark: Mark) {
-            self.function = function
-            self.mark = mark
-            super.init()
-            self.set(location: mark)
-            arguments.forEach {
-                add($0)
-            }
-        }
-
-        override var description: String {
-            return "Call '\(function.identifier)' with \(children.count) argument(s)"
-        }
-    }
+enum SemaError {
+    case expectedFunctionForCall
+    case incorrectArgumentCount(expected: Int, got: Int)
+    case argumentTypeMismatch(expected: Type, got: Type, at: Int)
 }
-
-

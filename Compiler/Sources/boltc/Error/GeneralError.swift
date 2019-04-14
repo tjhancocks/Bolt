@@ -36,6 +36,9 @@ enum Error: Swift.Error {
 
     // Type error: file.bolt:1:1 -- type mismatch
     case typeError(location: Mark, reason: TypeError)
+
+    // Semantic error: file.bolt:1:1 -- illegal use of ...
+    case semaError(location: Mark, reason: SemaError)
 }
 
 extension Error: CustomStringConvertible {
@@ -49,6 +52,9 @@ extension Error: CustomStringConvertible {
 
         case .typeError(let location, let reason):
             return "Type error: \(location) -- \(reason)"
+
+        case .semaError(let location, let reason):
+            return "Semantic error: \(location) -- \(reason)"
 
         case .fileError(let reason):
             return "Source error: \(reason)"
