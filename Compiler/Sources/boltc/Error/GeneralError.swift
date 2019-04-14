@@ -53,6 +53,9 @@ extension Error: CustomStringConvertible {
         case .typeError(let location, let reason):
             return "Type error: \(location) -- \(reason)"
 
+        case .semaError(let location, let reason):
+            return "Semantic error: \(location) -- \(reason)"
+
         case .fileError(let reason):
             return "Source error: \(reason)"
 

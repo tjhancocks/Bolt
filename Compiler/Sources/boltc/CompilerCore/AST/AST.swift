@@ -86,6 +86,7 @@ extension AbstractSyntaxTree: CustomStringConvertible {
 
 extension AbstractSyntaxTree {
     class Node: CustomStringConvertible {
+        private(set) var location: Mark = .unknown
         private(set) var owner: AbstractSyntaxTree?
         private(set) var parent: AbstractSyntaxTree.Node?
         private(set) var children: [AbstractSyntaxTree.Node] = []
@@ -103,6 +104,10 @@ extension AbstractSyntaxTree {
             children.append(node)
         }
 
+        func set(location: Mark) {
+            self.location = location
+        }
+
         var description: String {
             return "AST Node"
         }
@@ -115,7 +120,11 @@ extension AbstractSyntaxTree.Node {
 
         var newChildren: [AbstractSyntaxTree.Node] = []
         try children.forEach { node in
-            newChildren.append(contentsOf: try body(node))
+            let newNodes = try body(node)
+            try newNodes.forEach { node in
+                _ = try node.traverse(body)
+                newChildren.append(node)
+            }
         }
         children = newChildren
     }

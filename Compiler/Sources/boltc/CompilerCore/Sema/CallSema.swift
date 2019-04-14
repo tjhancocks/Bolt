@@ -18,26 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class Sema {
-    private(set) var ast: AbstractSyntaxTree
+extension AbstractSyntaxTree.CallNode: SemaNode {
 
-    init(ast: AbstractSyntaxTree) {
-        self.ast = ast
-    }
-}
+    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node] {
+        guard let function = function.reference as? AbstractSyntaxTree.FunctionNode else {
+            throw Error.semaError(location: location, reason: .expectedFunctionForCall)
+        }
 
-extension Sema {
-    func performAnalysis() throws {
-        try ast.traverse { node in
-            if let semaNode = node as? SemaNode {
-                return try semaNode.performSemanticAnalysis()
-            } else {
-                return [node]
+        guard function.parameters.count == children.count else {
+            throw Error.semaError(location: location,
+                                  reason: .incorrectArgumentCount(expected: function.parameters.count, got: children.count))
+        }
+
+        try zip(function.parameters, children).enumerated().forEach { offset, parameter in
+            guard parameter.0.valueType == parameter.1.valueType else {
+                throw Error.semaError(location: location,
+                                      reason: .argumentTypeMismatch(expected: parameter.0.valueType, got: parameter.1.valueType, at: offset))
             }
         }
-    }
-}
 
-protocol SemaNode {
-    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node]
+        return [self]
+    }
+
 }

@@ -27,6 +27,7 @@ extension AbstractSyntaxTree {
             self.function = function
             self.mark = mark
             super.init()
+            self.set(location: mark)
             arguments.forEach {
                 add($0)
             }
