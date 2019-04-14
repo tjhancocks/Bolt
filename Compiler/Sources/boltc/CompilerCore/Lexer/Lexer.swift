@@ -164,7 +164,10 @@ extension Lexer {
         while let c = peek(), c.isNewline == false {
             try advance()
         }
-        try advance()
+
+        if scanner.available {
+            try advance()
+        }
     }
 
     private func consumeString() throws -> Token {
