@@ -22,6 +22,8 @@ echo "Building bolt compiler and checking for valid response."
 
 # Switch to the compiler directory and then build and run boltc.
 cd Compiler
+swift package resolve
+swift .build/checkouts/LLVMSwift/utils/make-pkgconfig.swift 
 RESULT=$(swift run boltc --validate-bolt)
 
 # Check if the result contains the required response text.
