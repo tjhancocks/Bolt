@@ -133,7 +133,11 @@ extension Scanner where T.Element == Token {
     }
 
     func peekLast() -> T.Element? {
-        return input.last
+        if let array = input as? [Token] {
+            return array.last
+        } else {
+            return nil
+        }
     }
 
     var location: Mark {
