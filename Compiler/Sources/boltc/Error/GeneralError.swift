@@ -58,3 +58,9 @@ extension Error: CustomStringConvertible {
         }
     }
 }
+
+extension Error {
+    func report() {
+        print(self)
+    }
+}
