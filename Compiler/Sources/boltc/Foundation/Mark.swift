@@ -36,6 +36,10 @@ extension Mark {
 
 extension Mark: CustomStringConvertible {
     var description: String {
-        return "\(file) L\(line):\(offset)"
+        if self == .unknown {
+            return "memory"
+        } else {
+            return "\(file):\(line):\(offset)"
+        }
     }
 }

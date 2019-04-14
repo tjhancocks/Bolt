@@ -43,25 +43,27 @@ struct VariableParser: ParserHelperProtocol {
         )
 
         // Variable name
-        let variableNameToken = try scanner.advance()
+        let variableNameToken = scanner.advance()
         guard case let .identifier(name, mark) = variableNameToken else {
-            throw Parser.Error.unexpectedTokenEncountered(token: variableNameToken)
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: variableNameToken))
         }
 
         // Check if there is an initial value with it? If so then use it.
         if case .symbol(.equals, _)? = scanner.peek() {
-            try scanner.advance()
+            scanner.advance()
 
             let parsers = Parser.returnParsers
             for parser in parsers {
                 if parser.test(for: scanner) {
                     let value = try parser.parse(from: scanner, ast: ast)
                     guard value.valueType == type.valueType else {
-                        fatalError("Type mismatch")
+                        throw Error.typeError(location: scanner.location,
+                                              reason: .mismatch(expected: type.valueType, got: value.valueType))
                     }
 
                     let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: value, mark: mark)
-                    ast.symbolTable.defineSymbol(name: name, node: node)
+                    try ast.symbolTable.defineSymbol(name: name, node: node, location: mark)
                     return node
                 }
             }
@@ -71,7 +73,7 @@ struct VariableParser: ParserHelperProtocol {
         } else {
             // Return a variable node without a value.
             let node = AbstractSyntaxTree.VariableNode(name: name, type: type, initialValue: nil, mark: mark)
-            ast.symbolTable.defineSymbol(name: name, node: node)
+            try ast.symbolTable.defineSymbol(name: name, node: node, location: mark)
             return node
         }
     }

@@ -89,10 +89,10 @@ extension Parser {
         // If we get here, then we must assume that we could not recognise
         // the sequence of tokens
         if let token = scanner.peek() {
-            throw Error.unrecognised(token: token)
+            throw Error.parserError(location: scanner.location, reason: .unrecognised(token: token))
         }
         else {
-            throw Error.unexpectedEndOfTokenStream
+            throw Error.parserError(location: scanner.location, reason: .unexpectedEndOfTokenStream)
         }
     }
 
@@ -112,41 +112,43 @@ extension Scanner where T.Element == Token {
 
     @discardableResult
     func consume(expected: T.Element...) throws -> [T.Element] {
-        var expected = expected
+        var expectedTokens = expected
         var matched: [T.Element] = []
 
-        while available, expected.isEmpty == false {
-            let item = try advance()
-            guard expected.removeFirst().matches(item) else {
-                throw Parser.Error.unexpectedTokenEncountered(token: item)
+        while available, let expect = expectedTokens.first {
+            let item = advance()
+            guard expectedTokens.removeFirst().matches(item) else {
+                throw Error.parserError(location: location,
+                                        reason: .expected(token: expect))
             }
             matched.append(item)
+        }
+
+        if matched.isEmpty, let expect = expected.first {
+            throw Error.parserError(location: location,
+                                    reason: .expected(token: expect))
         }
 
         return matched
     }
 
-}
-
-// MARK: - Errors
-
-extension Parser {
-    enum Error: Swift.Error {
-        case unexpectedEndOfTokenStream
-        case unrecognised(token: Token)
-        case unexpectedTokenEncountered(token: Token)
-    }
-}
-
-extension Parser.Error: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
-        switch self {
-        case .unexpectedEndOfTokenStream:
-            return (.error, "Parser unexpectedly encountered end of token stream.")
-        case let .unrecognised(token):
-            return (.error, "Parser encountered an unrecognised token: \(token)")
-        case let .unexpectedTokenEncountered(token):
-            return (.error, "Unexpected token encountered: \(token)")
+    func peekLast() -> T.Element? {
+        if let array = input as? [Token] {
+            return array.last
+        } else {
+            return nil
         }
     }
+
+    var location: Mark {
+        return peek()?.mark ?? peekLast()?.mark ?? .unknown
+    }
+
+    var token: Token {
+        guard let token = peek() else {
+            fatalError("Attempted to access a token that has been considered presented, but isn't.")
+        }
+        return token
+    }
+
 }

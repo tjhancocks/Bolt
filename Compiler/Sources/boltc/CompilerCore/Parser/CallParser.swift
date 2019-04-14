@@ -32,7 +32,7 @@ struct CallParser: ParserHelperProtocol {
         // Target function
         let idParser = IdentifierParser()
         guard idParser.test(for: scanner), let id = try idParser.parse(from: scanner, ast: ast) as? AbstractSyntaxTree.IdentifierNode else {
-            fatalError()
+            fatalError("Begun parsing what was expected to be a function call, but didn't find a function call. This is may mean the parser is out of sync with itself.")
         }
 
         // Argument list
@@ -50,7 +50,7 @@ struct CallParser: ParserHelperProtocol {
                     arguments.append(try parser.parse(from: scanner, ast: ast))
 
                     if case .symbol(.comma, _)? = scanner.peek() {
-                        try scanner.advance()
+                        scanner.advance()
                         continue nextArgument
                     } else {
                         break nextArgument
@@ -59,13 +59,12 @@ struct CallParser: ParserHelperProtocol {
             }
 
             // Reaching this point is an indication of something not being handled.
-            let token = try scanner.advance()
-            throw Parser.Error.unexpectedTokenEncountered(token: token)
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: scanner.token))
         }
 
         try scanner.consume(expected: .symbol(symbol: .rightParen, mark: .unknown))
 
-        print("function:: \(id)")
         return AbstractSyntaxTree.CallNode(function: id, arguments: arguments, mark: id.mark)
     }
 }

@@ -23,7 +23,7 @@ import Foundation
 class Lexer {
     private(set) var scanner: Scanner<String>
 
-    private var line: UInt = 0
+    private var line: UInt = 1
     private var lineOffset: UInt = 0
     private let file: File
     private var currentMark: Mark = .unknown
@@ -77,10 +77,10 @@ extension Lexer {
     @discardableResult
     private func advance(by n: Int = 1) throws -> Character {
         guard let string = peekString(of: n) else {
-            throw Error.unexpectedEndOfSource
+            throw Error.lexerError(location: currentMark, reason: .unexpectedEndOfSource)
         }
         handle(string: string)
-        return try scanner.advance(by: n)
+        return scanner.advance(by: n)
     }
 
     private func test(_ next: String, advanceOnMatch: Bool = false) throws -> Bool {
@@ -121,7 +121,11 @@ extension Lexer {
             // Consume any white space leading up to the next interesting thing.
             try consumeWhitespace(newlines: true)
 
+            guard scanner.available, let c = scanner.peek() else {
+                break
+            }
             updateMark()
+
             if try test(LanguageSpec.current.commentPrefix, advanceOnMatch: true) {
                 try consumeComment()
             }
@@ -138,7 +142,8 @@ extension Lexer {
                 discoveredTokens.append(try consumeSymbol())
             }
             else {
-                throw Error.unexpectedCharacterEncountered(character: try advance(), mark: currentMark)
+                throw Error.lexerError(location: currentMark,
+                                       reason: .unexpectedCharacterEncountered(character: c))
             }
         }
         
@@ -184,7 +189,8 @@ extension Lexer {
             return .float(number: number, text: text,mark: currentMark)
         }
         else {
-            throw Error.invalidNumericToken(text: text, mark: currentMark)
+            throw Error.lexerError(location: currentMark,
+                                   reason: .invalidNumericToken(text: text))
         }
     }
 
@@ -204,7 +210,8 @@ extension Lexer {
     private func consumeSymbol() throws -> Token {
         let symbolChar = try advance()
         guard let symbol = Symbol(rawValue: symbolChar) else {
-            throw Error.unexpectedCharacterEncountered(character: symbolChar, mark: currentMark)
+            throw Error.lexerError(location: currentMark,
+                                   reason: .unexpectedCharacterEncountered(character: symbolChar))
         }
         return .symbol(symbol: symbol, mark: currentMark)
     }
@@ -234,28 +241,5 @@ extension Lexer {
 
     private func isSymbol(_ c: Character, isFirst: Bool = false) -> Bool {
         return CharacterSet.symbolsSet.contains(c)
-    }
-}
-
-// MARK: - Error
-
-extension Lexer {
-    enum Error: Swift.Error {
-        case unexpectedEndOfSource
-        case invalidNumericToken(text: String, mark: Mark)
-        case unexpectedCharacterEncountered(character: Character, mark: Mark)
-    }
-}
-
-extension Lexer.Error: Reportable {
-    var report: (severity: ReportSeverity, text: String) {
-        switch self {
-        case .unexpectedEndOfSource:
-            return (.critical, "Unexpected end of source encountered.")
-        case let .invalidNumericToken(text, mark):
-            return (.error, "Invalid numeric token '\(text)' at \(mark)")
-        case let .unexpectedCharacterEncountered(char, mark):
-            return (.error, "Unexpected character '\(char)' encountered at \(mark)")
-        }
     }
 }

@@ -26,7 +26,7 @@ class AbstractSyntaxTree {
 
     var visitNode: AbstractSyntaxTree.Node {
         guard let node = visitStack.last else {
-            fatalError("AST visit stack is corrupted.")
+            fatalError("The AbstractSyntaxTree is somehow with a current visitation point. This is a serious error in the compiler.")
         }
         return node
     }
@@ -47,9 +47,9 @@ class AbstractSyntaxTree {
         visitStack.append(node)
     }
 
-    func leave() throws -> AbstractSyntaxTree.Node {
+    func leave(file: StaticString = #file, line: UInt = #line) -> AbstractSyntaxTree.Node {
         guard visitStack.count == 1, let node = visitStack.popLast() else {
-            throw Error.attemptedToLeaveMainModule
+            fatalError("The compiler attempted to leave the main scope of the program. This will most likely be due to an imbalance in the visit/leave calls in the AbstractSyntaxTree around \(file):\(line)")
         }
         return node
     }
@@ -137,13 +137,5 @@ extension AbstractSyntaxTree {
             let childrenDescription = children.map({ "\t\($0.description)" }).joined(separator: "\n")
             return "Module \(name)\n\(childrenDescription)"
         }
-    }
-}
-
-// MARK: - Errors
-
-extension AbstractSyntaxTree {
-    enum Error: Swift.Error {
-        case attemptedToLeaveMainModule
     }
 }

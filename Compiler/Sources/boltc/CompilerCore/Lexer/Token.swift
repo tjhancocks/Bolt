@@ -95,3 +95,29 @@ extension Token {
         }
     }
 }
+
+// MARK: - Token Locations/Marks
+
+extension Token {
+    var mark: Mark {
+        switch self {
+        case let .string(_, mark):
+            return mark
+
+        case let .integer(_, _, mark):
+            return mark
+
+        case let .float(_, _, mark):
+            return mark
+
+        case let .identifier(_, mark):
+            return mark
+
+        case let .keyword(_, mark):
+            return mark
+
+        case let .symbol(_, mark):
+            return mark
+        }
+    }
+}

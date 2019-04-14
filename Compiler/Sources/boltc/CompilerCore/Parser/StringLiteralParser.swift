@@ -28,9 +28,10 @@ struct StringLiteralParser: ParserHelperProtocol {
     }
 
     func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        let token = try scanner.advance()
+        let token = scanner.advance()
         guard case let .string(text, mark) = token else {
-            throw Parser.Error.unrecognised(token: token)
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unrecognised(token: token))
         }
         return AbstractSyntaxTree.StringLiteralNode(value: text, mark: mark)
     }

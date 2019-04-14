@@ -43,10 +43,17 @@ struct FunctionParser: ParserHelperProtocol {
         )
 
         // Function name
-        let functionNameToken = try scanner.advance()
-        guard case let .identifier(name, mark) = functionNameToken else {
-            throw Parser.Error.unexpectedTokenEncountered(token: functionNameToken)
+        guard case let .identifier(name, mark)? = scanner.peek() else {
+            if scanner.available {
+                throw Error.parserError(location: scanner.location,
+                                        reason: .unexpectedTokenEncountered(token: scanner.token))
+            } else {
+                throw Error.parserError(location: scanner.location,
+                                        reason: .unexpectedEndOfTokenStream)
+            }
+
         }
+        scanner.advance()
 
         // Parameters
         try scanner.consume(expected:.symbol(symbol: .leftParen, mark: .unknown))
@@ -59,7 +66,7 @@ struct FunctionParser: ParserHelperProtocol {
             parameters.append(try ParameterParser.parse(from: scanner, ast: ast))
 
             if case .symbol(.comma, _)? = scanner.peek() {
-                try scanner.advance()
+                scanner.advance()
             } else {
                 break
             }
@@ -68,15 +75,15 @@ struct FunctionParser: ParserHelperProtocol {
 
         // Build the declaration
         let declaration = AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, parameters: parameters, mark: mark)
-        ast.symbolTable.defineSymbol(name: name, node: declaration)
+        try ast.symbolTable.defineSymbol(name: name, node: declaration, location: mark)
 
         // Check if there is a code body attached? If so then add it.
         let codeBlockParser = CodeBlockParser()
         if codeBlockParser.test(for: scanner) {
             ast.symbolTable.enterScope()
 
-            parameters.forEach {
-                ast.symbolTable.defineSymbol(name: $0.name, node: $0)
+            try parameters.forEach {
+                try ast.symbolTable.defineSymbol(name: $0.name, node: $0, location: mark)
             }
 
             declaration.add(try codeBlockParser.parse(from: scanner, ast: ast))

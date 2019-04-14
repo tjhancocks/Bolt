@@ -24,7 +24,7 @@ do {
     let compiler = Invocation(arguments: CommandLine.arguments)
     try compiler.run()
 }
-catch let error {
-    report(error)
+catch let error as Error {
+    error.report()
     exit(1)
 }
