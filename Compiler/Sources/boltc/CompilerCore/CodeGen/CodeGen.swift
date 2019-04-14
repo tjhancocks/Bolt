@@ -26,7 +26,7 @@ class CodeGen {
 
     init(ast: AbstractSyntaxTree) {
         self.ast = ast
-        self.module = .init(name: "MainModule")
+        self.module = .init(name: ast.initialModule.name)
     }
 }
 

@@ -20,6 +20,7 @@
 
 class AbstractSyntaxTree {
 
+    private(set) var initialModule:AbstractSyntaxTree.ModuleNode
     private(set) var modules: [AbstractSyntaxTree.ModuleNode] = []
     private(set) var visitStack: [AbstractSyntaxTree.Node] = []
     private(set) var symbolTable: SymbolTable = .init()
@@ -33,6 +34,7 @@ class AbstractSyntaxTree {
 
     init(mainModuleName moduleName: String) {
         let initialModule = ModuleNode(named: moduleName, owner: self)
+        self.initialModule = initialModule
         self.modules.append(initialModule)
         self.visitStack.append(initialModule)
     }
