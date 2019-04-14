@@ -3,7 +3,7 @@ Bolt will be a programming language and compiler, intended to be a replacement f
 
 | CI Job | Status |
 | --- | --- |
-| Compiler Build | ![BuildCIBadge][https://travis-ci.org/tjhancocks/Bolt.svg?branch=develop] |
+| Compiler Build | ![BuildCIBadge](https://travis-ci.org/tjhancocks/Bolt.svg?branch=develop) |
 
 ```bolt
 // A simple Hello, World program in Bolt.
