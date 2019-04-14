@@ -25,5 +25,6 @@ do {
     try compiler.run()
 }
 catch let error as Error {
-    report(error)
+    error.report()
+    exit(1)
 }
