@@ -1,3 +1,0 @@
-// Duplicate symbols test
-let<Int> foo = 24
-let<Int> foo = 42 // Error: This conflicts with the previous definition of foo
