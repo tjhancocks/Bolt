@@ -1,9 +1,10 @@
 # Bolt
-Bolt will be a programming language and compiler, intended to be a replacement for C in my own personal projects. For this reason it will largely be a general purpose language capable of tasks ranging from _Kernel Development_ to _App Development_.
 
 | CI Job | Status |
 | --- | --- |
 | Compiler Build | ![BuildCIBadge](https://travis-ci.org/tjhancocks/Bolt.svg?branch=develop) |
+
+Bolt will be a programming language and compiler, intended to be a replacement for C in my own personal projects. For this reason it will largely be a general purpose language capable of tasks ranging from _Kernel Development_ to _App Development_.
 
 ```bolt
 // A simple Hello, World program in Bolt.
