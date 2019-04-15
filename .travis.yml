@@ -18,8 +18,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-language:
-  - swift
-osx_image: xcode10.2
-script:
-  - make compiler-test
+env:
+  global:
+    - LC_CTYPE=en_US.UTF-8
+matrix:
+  include:
+    - os: osx
+      language: swift
+      osx_image: xcode10.2
+      before_install:
+        - export PATH=/usr/local/opt/llvm/bin:"${PATH}"
+        - brew update
+        - brew install llvm
+      script:
+        - make compiler-test
