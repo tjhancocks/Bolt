@@ -120,6 +120,7 @@ extension BuildSystem.Module {
         try exportIr(module: module)
         try exportObject(module: module)
         try exportAsm(module: module)
+        try BuildSystem.main.link(binary: "program", objects: artefactPath(for: module, and: "o"))
     }
 
     func exportIr(module: LLVM.Module) throws {
@@ -150,6 +151,29 @@ extension BuildSystem.Module {
         }
         catch let error {
             fatalError("\(error)")
+        }
+    }
+}
+
+extension BuildSystem {
+    private func shell(launchPath: String, arguments: [String]) -> String? {
+        let task = Process()
+        task.launchPath = launchPath
+        task.arguments = arguments
+
+        let pipe = Pipe()
+        task.standardOutput = pipe
+        task.launch()
+
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        let output = String(data: data, encoding: String.Encoding.utf8)
+
+        return output
+    }
+
+    func link(binary: String, objects: String...) throws {
+        if let result = shell(launchPath: "/usr/bin/ld", arguments: ["-lc", "-o", binary] + objects) {
+            print("link result: \(result)")
         }
     }
 }
