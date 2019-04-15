@@ -94,6 +94,10 @@ extension BuildSystem.Module {
         return buildDirectory.appendingPathComponent(module.name).appendingPathExtension(fileExtension).path
     }
 
+    private func target() throws -> LLVM.TargetMachine {
+        return try .init()
+    }
+
     static func `import`(for file: File) throws -> AbstractSyntaxTree {
         let lexer = Lexer(source: try file.loadSource())
         let parser = Parser(tokenStream: try lexer.performAnalysis())
@@ -114,11 +118,35 @@ extension BuildSystem.Module {
         let module = try generator.generateLLVMModule()
 
         try exportIr(module: module)
+        try exportObject(module: module)
+        try exportAsm(module: module)
     }
 
     func exportIr(module: LLVM.Module) throws {
         do {
             try module.print(to: try artefactPath(for: module, and: "ll"))
+        }
+        catch let error {
+            fatalError("\(error)")
+        }
+    }
+
+    func exportObject(module: LLVM.Module) throws {
+        do {
+            try target().emitToFile(module: module,
+                                    type: .object,
+                                    path: artefactPath(for: module, and: "o"))
+        }
+        catch let error {
+            fatalError("\(error)")
+        }
+    }
+
+    func exportAsm(module: LLVM.Module) throws {
+        do {
+            try target().emitToFile(module: module,
+                                    type: .assembly,
+                                    path: artefactPath(for: module, and: "s"))
         }
         catch let error {
             fatalError("\(error)")
