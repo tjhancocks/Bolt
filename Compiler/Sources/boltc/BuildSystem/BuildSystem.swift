@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import Foundation
+import LLVM
 
 class BuildSystem {
 
@@ -85,6 +86,14 @@ extension BuildSystem {
 }
 
 extension BuildSystem.Module {
+    private func artefactPath(for module: LLVM.Module, and fileExtension: String) throws -> String {
+        let buildDirectory = URL(fileURLWithPath: ".bolt-build", isDirectory: true)
+
+        // Attempt to create the build directory if its needed.
+        try FileManager.default.createDirectory(at: buildDirectory, withIntermediateDirectories: true, attributes: nil)
+        return buildDirectory.appendingPathComponent(module.name).appendingPathExtension(fileExtension).path
+    }
+
     static func `import`(for file: File) throws -> AbstractSyntaxTree {
         let lexer = Lexer(source: try file.loadSource())
         let parser = Parser(tokenStream: try lexer.performAnalysis())
@@ -103,6 +112,16 @@ extension BuildSystem.Module {
 
         let generator = CodeGen(ast: ast)
         let module = try generator.generateLLVMModule()
-        module.dump()
+
+        try exportIr(module: module)
+    }
+
+    func exportIr(module: LLVM.Module) throws {
+        do {
+            try module.print(to: try artefactPath(for: module, and: "ll"))
+        }
+        catch let error {
+            fatalError("\(error)")
+        }
     }
 }
