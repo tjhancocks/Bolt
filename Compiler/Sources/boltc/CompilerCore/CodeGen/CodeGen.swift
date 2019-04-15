@@ -36,11 +36,13 @@ extension CodeGen {
         let module: LLVM.Module
         let builder: LLVM.IRBuilder
         var parameters: [String:LLVM.IRValue]
+        var variables: [String:LLVM.IRValue]
 
-        init(module: LLVM.Module, builder: LLVM.IRBuilder, parameters: [String:LLVM.IRValue] = [:]) {
+        init(module: LLVM.Module, builder: LLVM.IRBuilder) {
             self.module = module
             self.builder = builder
-            self.parameters = parameters
+            self.parameters = [:]
+            self.variables = [:]
         }
     }
 }
@@ -57,6 +59,14 @@ extension CodeGen {
 protocol CodeGeneratorProtocol {
     @discardableResult
     func generate(for context: CodeGen.Context) throws -> IRValue?
+
+    func global(named name: String, for context: CodeGen.Context) throws -> Global?
+}
+
+extension CodeGeneratorProtocol {
+    func global(named name: String, for context: CodeGen.Context) throws -> Global? {
+        return nil
+    }
 }
 
 extension AbstractSyntaxTree.ModuleNode: CodeGeneratorProtocol {

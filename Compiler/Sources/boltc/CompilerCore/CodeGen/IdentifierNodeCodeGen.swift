@@ -24,7 +24,17 @@ extension AbstractSyntaxTree.IdentifierNode: CodeGeneratorProtocol {
     @discardableResult
     func generate(for context: CodeGen.Context) throws -> IRValue? {
         // Can we find this identifier as a parameter?
-        if let parameter = context.parameters[identifier] {
+        if let variable = context.variables[identifier] {
+
+            // We have some special cases for types...
+            if valueType.resolvedType == .pointer(.int8) {
+                return context.builder.buildGEP(variable, indices: [0, 0])
+            }
+            else {
+                return variable
+            }
+        }
+        else if let parameter = context.parameters[identifier] {
             return parameter
         }
         

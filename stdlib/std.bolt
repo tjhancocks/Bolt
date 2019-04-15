@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import darwin
+import libc
 
 let<String> __stdVersion = "Bolt Standard Library v0.0.1"
 
