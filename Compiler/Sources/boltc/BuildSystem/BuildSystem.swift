@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 import Foundation
+import LLVM
 
 class BuildSystem {
 
@@ -103,6 +104,23 @@ extension BuildSystem.Module {
 
         let generator = CodeGen(ast: ast)
         let module = try generator.generateLLVMModule()
-        module.dump()
+
+        try exportIr(module: module)
+    }
+
+    func exportIr(module: LLVM.Module) throws {
+        let buildDirectory = URL(fileURLWithPath: ".bolt-build", isDirectory: true)
+        do {
+            // Attempt to create the build directory if its needed.
+            try FileManager.default.createDirectory(at: buildDirectory, withIntermediateDirectories: true, attributes: nil)
+
+            let exportIrFile = buildDirectory
+                .appendingPathComponent(module.name)
+                .appendingPathExtension("ll")
+            try module.print(to: exportIrFile.path)
+        }
+        catch let error {
+            fatalError("\(error)")
+        }
     }
 }
