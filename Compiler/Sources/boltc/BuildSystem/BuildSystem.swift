@@ -86,6 +86,14 @@ extension BuildSystem {
 }
 
 extension BuildSystem.Module {
+    private func artefactPath(for module: LLVM.Module, and fileExtension: String) throws -> String {
+        let buildDirectory = URL(fileURLWithPath: ".bolt-build", isDirectory: true)
+
+        // Attempt to create the build directory if its needed.
+        try FileManager.default.createDirectory(at: buildDirectory, withIntermediateDirectories: true, attributes: nil)
+        return buildDirectory.appendingPathComponent(module.name).appendingPathExtension(fileExtension).path
+    }
+
     static func `import`(for file: File) throws -> AbstractSyntaxTree {
         let lexer = Lexer(source: try file.loadSource())
         let parser = Parser(tokenStream: try lexer.performAnalysis())
@@ -109,15 +117,8 @@ extension BuildSystem.Module {
     }
 
     func exportIr(module: LLVM.Module) throws {
-        let buildDirectory = URL(fileURLWithPath: ".bolt-build", isDirectory: true)
         do {
-            // Attempt to create the build directory if its needed.
-            try FileManager.default.createDirectory(at: buildDirectory, withIntermediateDirectories: true, attributes: nil)
-
-            let exportIrFile = buildDirectory
-                .appendingPathComponent(module.name)
-                .appendingPathExtension("ll")
-            try module.print(to: exportIrFile.path)
+            try module.print(to: try artefactPath(for: module, and: "ll"))
         }
         catch let error {
             fatalError("\(error)")
