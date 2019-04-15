@@ -39,6 +39,9 @@ enum Error: Swift.Error {
 
     // Semantic error: file.bolt:1:1 -- illegal use of ...
     case semaError(location: Mark, reason: SemaError)
+
+    // Code generation error: file.bolt:1:1 -- missing declaration
+    case codeGenError(location: Mark, reason: CodeGenError)
 }
 
 extension Error: CustomStringConvertible {
@@ -58,6 +61,9 @@ extension Error: CustomStringConvertible {
 
         case .fileError(let reason):
             return "Source error: \(reason)"
+
+        case .codeGenError(let location, let reason):
+            return "Code generation error: \(location) -- \(reason)"
 
         default:
             return "Unknown error occurred"

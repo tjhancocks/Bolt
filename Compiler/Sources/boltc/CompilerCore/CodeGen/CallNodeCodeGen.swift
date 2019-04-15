@@ -20,54 +20,23 @@
 
 import LLVM
 
-class CodeGen {
-    private(set) var context: Context
-    private(set) var ast: AbstractSyntaxTree
-
-    init(ast: AbstractSyntaxTree) {
-        let module = LLVM.Module(name: ast.initialModule.name)
-        self.ast = ast
-        self.context = .init(module: module, builder: .init(module: module))
-    }
-}
-
-extension CodeGen {
-    class Context {
-        let module: LLVM.Module
-        let builder: LLVM.IRBuilder
-        var parameters: [String:LLVM.IRValue]
-
-        init(module: LLVM.Module, builder: LLVM.IRBuilder, parameters: [String:LLVM.IRValue] = [:]) {
-            self.module = module
-            self.builder = builder
-            self.parameters = parameters
-        }
-    }
-}
-
-extension CodeGen {
-    func generateLLVMModule() throws -> LLVM.Module {
-        try ast.modules.forEach { node in
-            try node.generate(for: context)
-        }
-        return context.module
-    }
-}
-
-protocol CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue?
-}
-
-extension AbstractSyntaxTree.ModuleNode: CodeGeneratorProtocol {
+extension AbstractSyntaxTree.CallNode: CodeGeneratorProtocol {
     @discardableResult
     func generate(for context: CodeGen.Context) throws -> IRValue? {
-        try children.forEach { node in
-            guard let node = node as? CodeGeneratorProtocol else {
-                return
-            }
-            _ = try node.generate(for: context)
+        guard let function = context.module.function(named: function.identifier) else {
+            throw Error.codeGenError(location: location, reason: .missingFunctionDeclaration(function: self.function.identifier))
         }
-        return nil
+
+        let arguments: [IRValue] = try children.map { node in
+            guard let node = node as? CodeGeneratorProtocol else {
+                fatalError("Expected AST node to be a Code Generator.")
+            }
+            guard let value = try node.generate(for: context) else {
+                fatalError("Expected AST node to provide valid IRValue.")
+            }
+            return value
+        }
+
+        return context.builder.buildCall(function, args: arguments)
     }
 }

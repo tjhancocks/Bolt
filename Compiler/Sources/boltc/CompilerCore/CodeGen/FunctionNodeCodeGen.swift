@@ -20,22 +20,47 @@
 
 import LLVM
 
-extension AbstractSyntaxTree.FunctionNode: CodeGenNode {
-    func generate(for builder: IRBuilder) throws {
+extension AbstractSyntaxTree.FunctionNode: CodeGeneratorProtocol {
+    @discardableResult
+    func generate(for context: CodeGen.Context) throws -> IRValue? {
         // Check if the function has already been defined/declared.
-        if let _ = builder.module.function(named: name) {
+        if let function = context.module.function(named: name) {
             print("Note: Already generated function \(name)")
-            return
+            return function
         }
+
 
         // It hasn't so build it.
         let functionType = FunctionType(argTypes: parameters.map({ $0.valueType.IRType }),
                                         returnType: valueType.IRType)
-        let function = builder.addFunction(name, type: functionType)
+        let function = context.builder.addFunction(name, type: functionType)
+
+        for (var param, node) in zip(function.parameters, parameters) {
+            param.name = node.name
+        }
 
         if children.isEmpty == false {
+            // Save the current parameters for now, use the ones for this function
+            let oldParameters = context.parameters
+            context.parameters = [:]
+            function.parameters.forEach {
+                context.parameters[$0.name] = $0
+            }
+
             let entry = function.appendBasicBlock(named: "entry")
-            builder.positionAtEnd(of: entry)
+            context.builder.positionAtEnd(of: entry)
+
+            try children.forEach { child in
+                guard let child = child as? CodeGeneratorProtocol else {
+                    fatalError("-")
+                }
+                try child.generate(for: context)
+            }
+
+            // Restore the old parameters
+            context.parameters = oldParameters
         }
+
+        return function
     }
 }
