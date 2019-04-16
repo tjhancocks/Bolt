@@ -1,0 +1,125 @@
+%YAML 1.2
+---
+name: Bolt
+file_extensions:
+  - bolt
+scope: source.bolt
+
+variables:
+  identifier: \b[[:alpha:]_][[:alnum:]_]*\b
+  return_type: 'None|{{data_type}}'
+  data_type: '(Int|Int8|String)\s*\**'
+
+contexts:
+  # The prototype context is prepended to all contexts but those setting
+  # meta_include_prototype: false.
+  prototype:
+    - include: comments
+
+  main:
+    - include: statements
+
+  statements:
+    - include: func_decl
+    - include: var_decl
+    - include: return
+    - include: import
+    - include: expressions
+
+  expressions:
+    - include: strings
+    - include: numbers
+    - include: call
+
+  func_decl:
+    - match: '\b(func)\s*([<]{1})\s*({{return_type}})\s*([>]{1})\s*({{identifier}})'
+      captures:
+        1: keyword.declaration.bolt
+        2: keyword.declaration.bolt
+        3: support.type.bolt
+        5: keyword.declaration.bolt
+        6: entity.name.function.bolt
+    - match: '\s*(\()'
+      captures:
+        1: meta.group.bolt
+      push:
+        - include: parameter_decl
+        - match: '\s*(\))'
+          captures:
+            1: meta.group.bolt
+          pop: true
+
+  var_decl:
+    - match: '\b(let|var)\s*([<]{1})\s*({{data_type}})\s*([>]{1})\s*({{identifier}})'
+      captures:
+        1: keyword.declaration.bolt
+        2: keyword.declaration.bolt
+        3: support.type.bolt
+        5: keyword.declaration.bolt
+        6: entity.name.bolt
+
+  parameter_decl:
+    - match: '\b({{identifier}})\s*([:]{1})\s*({{data_type}})'
+      captures:
+        1: keyword.declaration.bolt
+        2: keyword.declaration.bolt
+        3: support.type.bolt
+
+  return:
+    - match: '\b(return)\s*'
+      captures:
+        1: keyword.control.flow.return.bolt
+      push:
+        - include: expressions
+        - match: ''
+          pop: true
+
+  import:
+    - match: '\b(import)\s*({{identifier}}|["]{1}[^"]*["]{1})'
+      captures:
+        1: keyword.import.bolt
+        2: string.bolt
+
+  call:
+    - match: '\b({{identifier}})\s*(\()'
+      captures:
+        1: entity.name.bolt
+        2: meta.group.bolt
+      push:
+        - match: '\s*(\))'
+          captures:
+            1: meta.group.bolt
+          pop: true
+        - include: expressions
+
+################################################################################
+
+  keywords:
+    - match: '\b(func|let|return)\b'
+      scope: keyword.control.bolt
+
+  numbers:
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.bolt
+
+  strings:
+    - match: '"'
+      scope: punctuation.definition.string.begin.bolt
+      set:
+        - meta_scope: string.quoted.double.bolt
+        - match: '\.'
+          scope: constant.character.escape.bolt
+        - match: '"'
+          scope: punctuation.definition.string.end.bolt
+          pop: true
+
+################################################################################
+
+  comments:
+    # Comments begin with a '//' and finish at the end of the line.
+    - match: '//'
+      scope: punctuation.definition.comment.bolt
+      push:
+        - meta_scope: comment.line.double-slash.bolt
+        - match: $\n?
+          pop: true

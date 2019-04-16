@@ -18,29 +18,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-echo "Building bolt compiler and checking for valid response."
+echo "Building the Bolt Compiler"
 
-# Switch to the compiler directory and then build and run boltc.
 cd Compiler
 swift package resolve
-swift .build/checkouts/LLVMSwift/utils/make-pkgconfig.swift 
-RESULT=$(swift run boltc --validate-bolt)
-
-# Check if the result contains the required response text.
-if [[ ${RESULT} == *"boltc built ok"* ]]; then
-	echo "Bolt compiler built successfully."
-else
-	echo "Bolt compiler built with errors."
-	exit 1
-fi
-
-# Attempt to build "hello.bolt" and verify its output.
-RESULT=$(swift run boltc -o test --library ../stdlib ../Samples/hello.bolt && ./test)
-echo "${RESULT}"
-if [[ ${RESULT} == *"Hello, World!"* ]]; then
-	echo "hello.bolt was built and run correctly."
-	exit 0
-else
-	echo "hello.bolt was built and run with errors."
-	exit 1
-fi
+swift ./build
+mkdir -p ../.build
+cp `swift build --show-bin-path`/boltc ../.build/boltc
