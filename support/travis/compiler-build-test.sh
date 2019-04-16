@@ -35,9 +35,11 @@ else
 fi
 
 # Attempt to build "hello.bolt" and verify its output.
-RESULT=$(swift run boltc -o test ../Samples/hello.bolt && ./test)
+RESULT=$(swift run boltc -o test --library ../stdlib ../Samples/hello.bolt && ./test)
+echo "${RESULT}"
 if [[ ${RESULT} == *"Hello, World!"* ]]; then
 	echo "hello.bolt was built and run correctly."
+	exit 0
 else
 	echo "hello.bolt was built and run with errors."
 	exit 1
