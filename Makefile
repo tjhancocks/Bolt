@@ -18,8 +18,35 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-.PHONY: all
-all: compiler-test
+SHELL := /bin/bash
+BUILD := .build
+SUBLIME.SUPPORT = ~/Library/Application\ Support/Sublime\ Text\ 3/Installed\ Packages
+
+################################################################################
+## GENERAL
+## General rules for interacting with the project as a whole rather than in
+## specific targeted ways.
+
+.PHONY: all clean
+all: compiler-test build-plugins
+
+clean:
+	-rm -rf $(BUILD)
+
+################################################################################
+## COMPILER BUILD & INSTALLATION
+## Build the compiler and/or install it into /usr/local/bin directory.
+.PHONY: boltc install-boltc
+
+boltc: build/boltc
+
+install-boltc: boltc
+	cp $(BUILD)/boltc /usr/local/bin/boltc
+	mkdir -p /usr/local/lib/bolt
+	cp stdlib/* /usr/local/lib/bolt
+
+build/boltc:
+	sh support/build/boltc.sh
 
 ################################################################################
 ## COMPILER TEST
@@ -31,3 +58,23 @@ all: compiler-test
 .PHONY: compiler-test
 compiler-test:
 	sh support/travis/compiler-build-test.sh
+
+################################################################################
+## BUILD PLUGINS
+## This section is covering the build rules for the various plugins that are
+## provided by Bolt, such as Sublime Text Integration.\
+.PHONY: build-plugins
+build-plugins: build-sublime-package
+
+## SUBLIME TEXT ----------------------------------------------------------------
+SUBLIME-PKG := Bolt.sublime-package
+
+.PHONY: build-sublime-package
+build-sublime-package: clean $(BUILD)/Bolt.sublime-package
+	- rm $(SUBLIME.SUPPORT)/$(SUBLIME-PKG)
+	- sleep 1
+	- cp $(BUILD)/$(SUBLIME-PKG) $(SUBLIME.SUPPORT)/$(SUBLIME-PKG)
+
+$(BUILD)/$(SUBLIME-PKG):
+	mkdir -p $(BUILD)
+	zip -jr $@ support/plugins/sublime-text/Bolt
