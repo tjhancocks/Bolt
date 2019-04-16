@@ -29,8 +29,16 @@ RESULT=$(swift run boltc --validate-bolt)
 # Check if the result contains the required response text.
 if [[ ${RESULT} == *"boltc built ok"* ]]; then
 	echo "Bolt compiler built successfully."
-	exit 0
 else
 	echo "Bolt compiler built with errors."
+	exit 1
+fi
+
+# Attempt to build "hello.bolt" and verify its output.
+RESULT=$(swift run boltc -o test ../Samples/hello.bolt && ./test)
+if [[ ${RESULT} == *"Hello, World!"* ]]; then
+	echo "hello.bolt was built and run correctly."
+else
+	echo "hello.bolt was built and run with errors."
 	exit 1
 fi

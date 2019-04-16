@@ -21,6 +21,13 @@
 .PHONY: all
 all: compiler-test
 
+################################################################################
+## COMPILER TEST
+## This is a script that is run on TravisCI or locally to verify that the 
+## compiler is building correctly and producing a valid output.
+##
+## Any alterations to this _must_ be verified before merging to develop as any
+## errors in this will render test results potentially invalid.
 .PHONY: compiler-test
 compiler-test:
 	sh support/travis/compiler-build-test.sh
