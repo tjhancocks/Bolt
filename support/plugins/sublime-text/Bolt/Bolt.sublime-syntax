@@ -21,6 +21,15 @@ contexts:
 
   statements:
     - include: func_decl
+    - include: var_decl
+    - include: return
+    - include: import
+    - include: expressions
+
+  expressions:
+    - include: strings
+    - include: numbers
+    - include: call
 
   func_decl:
     - match: '\b(func)\s*([<]{1})\s*({{return_type}})\s*([>]{1})\s*({{identifier}})'
@@ -32,13 +41,22 @@ contexts:
         6: entity.name.function.bolt
     - match: '\s*(\()'
       captures:
-        1: support.other.bolt
+        1: meta.group.bolt
       push:
         - include: parameter_decl
         - match: '\s*(\))'
           captures:
-            1: support.other.bolt
+            1: meta.group.bolt
           pop: true
+
+  var_decl:
+    - match: '\b(let|var)\s*([<]{1})\s*({{data_type}})\s*([>]{1})\s*({{identifier}})'
+      captures:
+        1: keyword.declaration.bolt
+        2: keyword.declaration.bolt
+        3: support.type.bolt
+        5: keyword.declaration.bolt
+        6: entity.name.bolt
 
   parameter_decl:
     - match: '\b({{identifier}})\s*([:]{1})\s*({{data_type}})'
@@ -46,6 +64,33 @@ contexts:
         1: keyword.declaration.bolt
         2: keyword.declaration.bolt
         3: support.type.bolt
+
+  return:
+    - match: '\b(return)\s*'
+      captures:
+        1: keyword.control.flow.return.bolt
+      push:
+        - include: expressions
+        - match: ''
+          pop: true
+
+  import:
+    - match: '\b(import)\s*({{identifier}}|["]{1}[^"]*["]{1})'
+      captures:
+        1: keyword.import.bolt
+        2: string.bolt
+
+  call:
+    - match: '\b({{identifier}})\s*(\()'
+      captures:
+        1: entity.name.bolt
+        2: meta.group.bolt
+      push:
+        - match: '\s*(\))'
+          captures:
+            1: meta.group.bolt
+          pop: true
+        - include: expressions
 
 ################################################################################
 
