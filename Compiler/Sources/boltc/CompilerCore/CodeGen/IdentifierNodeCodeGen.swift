@@ -1,15 +1,15 @@
 // Copyright (c) 2019 Tom Hancocks
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,11 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import libc
+import LLVM
 
-let<String> __stdVersion = "Bolt Standard Library v0.0.1"
+extension AbstractSyntaxTree.IdentifierNode: CodeGeneratorProtocol {
+    @discardableResult
+    func generate(for context: CodeGen.Context) throws -> IRValue? {
+        // Can we find this identifier as a parameter?
+        if let variable = context.variables[identifier] {
 
-func<None> print(text: String) {
-	puts(text)
-	return
+            // We have some special cases for types...
+            if valueType.resolvedType == .pointer(.int8) {
+                return context.builder.buildGEP(variable, indices: [0, 0])
+            }
+            else {
+                return variable
+            }
+        }
+        else if let parameter = context.parameters[identifier] {
+            return parameter
+        }
+        
+        return nil
+    }
 }

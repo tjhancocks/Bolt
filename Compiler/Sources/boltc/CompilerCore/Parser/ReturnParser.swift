@@ -1,15 +1,15 @@
 // Copyright (c) 2019 Tom Hancocks
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,11 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import libc
+struct ReturnParser: ParserHelperProtocol {
+    func test(for scanner: Scanner<[Token]>) -> Bool {
+        if case .keyword(.return, _)? = scanner.peek() {
+            return true
+        } else {
+            return false
+        }
+    }
 
-let<String> __stdVersion = "Bolt Standard Library v0.0.1"
+    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
+        try scanner.consume(expected: .keyword(keyword: .return, mark: .unknown))
 
-func<None> print(text: String) {
-	puts(text)
-	return
+        // Is there an expression following the return keyword?
+        let parsers = Parser.returnParsers
+
+        for parser in parsers {
+            if parser.test(for: scanner) {
+                return AbstractSyntaxTree.ReturnNode(returnExpression: try parser.parse(from: scanner, ast: ast), mark: .unknown)
+            }
+        }
+
+        return AbstractSyntaxTree.ReturnNode(returnExpression: nil, mark: .unknown)
+    }
 }

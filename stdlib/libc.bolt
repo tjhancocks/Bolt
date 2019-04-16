@@ -18,11 +18,5 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import libc
-
-let<String> __stdVersion = "Bolt Standard Library v0.0.1"
-
-func<None> print(text: String) {
-	puts(text)
-	return
-}
+func<None> puts(str: String)
+func<Int> strlen(str: String)

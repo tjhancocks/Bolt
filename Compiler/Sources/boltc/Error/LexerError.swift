@@ -1,15 +1,15 @@
 // Copyright (c) 2019 Tom Hancocks
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -18,42 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import Foundation
-
-/// Report an error to the user. Dependin
-func report<T>(_ item: T) {
-    if let report = item as? Reportable {
-        print(report.report.text)
-        if report.report.severity.shouldAbort {
-            exit(1)
-        }
-    } else {
-        print("\(item)")
-    }
-}
-
-/// Entities that conform to the `Reportable` type can be reported to the user.
-protocol Reportable: CustomStringConvertible {
-    var report: (severity: ReportSeverity, text: String) { get }
-}
-
-extension Reportable {
-    var description: String {
-        return report.text
-    }
-}
-
-/// The level of severity the error representes
-enum ReportSeverity: Int {
-	case critical = 0
-	case error = 1
-	case warning = 2
-	case note = 3
-	case ok = 4
-}
-
-extension ReportSeverity {
-	var shouldAbort: Bool {
-		return rawValue <= 2
-	}
+enum LexerError {
+    case unexpectedEndOfSource
+    case invalidNumericToken(text: String)
+    case unexpectedCharacterEncountered(character: Character)
 }
