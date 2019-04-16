@@ -29,6 +29,7 @@ class BuildSystem {
     // Build flags
     var emitValidationResponse: Bool = false
     var emitVersion: Bool = false
+    var outputPath: String = "program"
     private(set) var libraryPaths: [URL] = []
 
     // Only one build system should exist - so its a singleton
@@ -82,20 +83,40 @@ extension BuildSystem {
         try modules.forEach { module in
             try module.build()
         }
+
+        // Link all modules together
+        try BuildSystem.main.link(binary: BuildSystem.main.outputPath, objects: modules.map({ $0.objectFile }))
     }
 }
 
 extension BuildSystem.Module {
-    private func artefactPath(for module: LLVM.Module, and fileExtension: String) throws -> String {
+    private func artefactPath(for moduleName: String, and fileExtension: String) -> String {
         let buildDirectory = URL(fileURLWithPath: ".bolt-build", isDirectory: true)
 
         // Attempt to create the build directory if its needed.
-        try FileManager.default.createDirectory(at: buildDirectory, withIntermediateDirectories: true, attributes: nil)
-        return buildDirectory.appendingPathComponent(module.name).appendingPathExtension(fileExtension).path
+        do {
+            try FileManager.default.createDirectory(at: buildDirectory, withIntermediateDirectories: true, attributes: nil)
+            return buildDirectory.appendingPathComponent(moduleName).appendingPathExtension(fileExtension).path
+        }
+        catch {
+            fatalError()
+        }
     }
 
     private func target() throws -> LLVM.TargetMachine {
         return try .init()
+    }
+
+    var objectFile: String {
+        return artefactPath(for: file.moduleName, and: "o")
+    }
+
+    var asmFile: String {
+        return artefactPath(for: file.moduleName, and: "s")
+    }
+
+    var irFile: String {
+        return artefactPath(for: file.moduleName, and: "ll")
     }
 
     static func `import`(for file: File) throws -> AbstractSyntaxTree {
@@ -120,12 +141,11 @@ extension BuildSystem.Module {
         try exportIr(module: module)
         try exportObject(module: module)
         try exportAsm(module: module)
-        try BuildSystem.main.link(binary: "program", objects: artefactPath(for: module, and: "o"))
     }
 
     func exportIr(module: LLVM.Module) throws {
         do {
-            try module.print(to: try artefactPath(for: module, and: "ll"))
+            try module.print(to: irFile)
         }
         catch let error {
             fatalError("\(error)")
@@ -134,9 +154,7 @@ extension BuildSystem.Module {
 
     func exportObject(module: LLVM.Module) throws {
         do {
-            try target().emitToFile(module: module,
-                                    type: .object,
-                                    path: artefactPath(for: module, and: "o"))
+            try target().emitToFile(module: module, type: .object, path: objectFile)
         }
         catch let error {
             fatalError("\(error)")
@@ -145,9 +163,7 @@ extension BuildSystem.Module {
 
     func exportAsm(module: LLVM.Module) throws {
         do {
-            try target().emitToFile(module: module,
-                                    type: .assembly,
-                                    path: artefactPath(for: module, and: "s"))
+            try target().emitToFile(module: module, type: .assembly, path: asmFile)
         }
         catch let error {
             fatalError("\(error)")
@@ -171,9 +187,9 @@ extension BuildSystem {
         return output
     }
 
-    func link(binary: String, objects: String...) throws {
-        if let result = shell(launchPath: "/usr/bin/ld", arguments: ["-lc", "-o", binary] + objects) {
-            print("link result: \(result)")
+    func link(binary: String, objects: [String]) throws {
+        if let result = shell(launchPath: "/usr/bin/ld", arguments: ["-lc", "-o", binary] + objects), result.isEmpty == false {
+            print("\(result)")
         }
     }
 }
