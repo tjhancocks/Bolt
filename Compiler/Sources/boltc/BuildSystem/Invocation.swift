@@ -43,6 +43,9 @@ class Invocation {
                 // Only used for CI checks
             case "--validate-bolt": BuildSystem.main.emitValidationResponse = true
 
+                // Output
+            case "-o":              BuildSystem.main.outputPath = arguments.advance()
+
                 // If the flag was not found, then attempt to add a new file/module
             default:
                 let file = File(path: arg)
