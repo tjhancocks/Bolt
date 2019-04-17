@@ -24,6 +24,7 @@ class AbstractSyntaxTree {
     private(set) var modules: [AbstractSyntaxTree.ModuleNode] = []
     private(set) var visitStack: [AbstractSyntaxTree.Node] = []
     private(set) var symbolTable: SymbolTable = .init()
+    private(set) var expressions: [AbstractSyntaxTree.Expression] = []
 
     var visitNode: AbstractSyntaxTree.Node {
         guard let node = visitStack.last else {
@@ -32,12 +33,13 @@ class AbstractSyntaxTree {
         return node
     }
 
-    init(mainModuleName moduleName: String) {
+    init(mainModuleName moduleName: String, expressions: [AbstractSyntaxTree.Expression] = []) {
         let initialModule = ModuleNode(named: moduleName)
         self.initialModule = initialModule
         self.modules.append(initialModule)
         self.visitStack.append(initialModule)
         self.initialModule.set(owner: self)
+        self.expressions = expressions
     }
 
     func traverse(_ body: (AbstractSyntaxTree.Node) throws -> [AbstractSyntaxTree.Node]) rethrows {

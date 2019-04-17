@@ -34,6 +34,17 @@ extension Parser {
 
     @discardableResult
     func parse() throws -> AbstractSyntaxTree {
+        var expressions: [AbstractSyntaxTree.Expression] = []
+
+        while scanner.available {
+            expressions.append(try parseNextExpression())
+        }
+
+        return AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName, expressions: expressions)
+    }
+
+    @discardableResult
+    func parseNextExpression() throws -> AbstractSyntaxTree.Expression {
         throw Error.parserError(location: .unknown, reason: .unexpectedEndOfTokenStream)
     }
 
