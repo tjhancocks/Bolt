@@ -42,9 +42,7 @@ extension AbstractSyntaxTree {
 
         // Identifiers
         case identifier(String, location: Mark)
-        case function(String, location: Mark)
-        case variable(String, location: Mark)
-        case parameter(String, location: Mark)
+        case boundIdentifier(Expression, location: Mark)
 
         // Expressions
         case call(identifier: Expression, arguments: [Expression], location: Mark)
@@ -68,11 +66,31 @@ extension AbstractSyntaxTree.Expression {
         case let .variableDeclaration(_, _, location): return location
         case let .type(_, location): return location
         case let .identifier(_, location): return location
-        case let .function(_, location): return location
-        case let .variable(_, location): return location
-        case let .parameter(_, location): return location
+        case let .boundIdentifier(_, location): return location
         case let .voidReturn(location): return location
         case let .return(_, location): return location
+        }
+    }
+}
+
+// MARK: - Expression Type
+
+extension AbstractSyntaxTree.Expression {
+    var type: Type {
+        switch self {
+        case .string: return .string
+        case .integer: return .int
+        case let .type(type, _): return type
+        case let .call(identifier, _, _): return identifier.type
+        case let .block(body, _): return body.last?.type ?? .none
+        case let .boundIdentifier(.functionDeclaration(_, returnType, _, _), _): return returnType.type
+        case let .boundIdentifier(.variableDeclaration(_, type, _), _): return type.type
+        case let .boundIdentifier(.parameterDeclaration(_, type, _), _): return type.type
+        case let .return(expr, _): return expr.type
+
+            // If an expression is unhandled, treat it as none.
+            // Not all expressions have a type.
+        default: return .none
         }
     }
 }
