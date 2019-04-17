@@ -24,6 +24,9 @@ extension AbstractSyntaxTree {
         case string(String, location: Mark)
         case integer(Int, location: Mark)
 
+        // Code Block, Groups
+        case block([Expression], location: Mark)
+
         // Definitions
         case definition(declaration: Expression, body: Expression)
 
