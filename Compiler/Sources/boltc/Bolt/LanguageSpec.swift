@@ -25,7 +25,7 @@ final class LanguageSpec {
 
     static let current = LanguageSpec()
 
-    var version: Version = .v001
+    var version: Version = .v002
 }
 
 // MARK: - Versioning Support
@@ -60,10 +60,10 @@ extension LanguageSpec: LanguageSpecVersion {
 }
 
 
-// MARK: - v0.0.1
+// MARK: - v0.0.2
 
 extension LanguageSpec.Version {
-    static var v001: LanguageSpec.Version {
+    static var v002: LanguageSpec.Version {
         return .init()
     }
 }

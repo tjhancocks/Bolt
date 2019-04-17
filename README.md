@@ -17,10 +17,8 @@ Bolt is still **very** much in its infancy. The language is still be fleshed out
 
 I've made it publically viewable, either so people can get involved if they want to, or see the evolution of a new language and compiler. Will it ever match the popularity or usage of something like Rust, Swift, Python, etc... most likely not, but that's not why I'm developing it.
 
-### v0.0.1 Milestone
-The current goal for Bolt is to reach the v0.0.1 Milestone. This may not seem like much, but it will represent the first major accomplishment of the language and compiler... to produce a _Hello World_ program, the one you see above. This will involve a number of the fundamentals of the compiler being put in place, a rudimentary standard library and integration with LLVM.
-
-Whilst this milestone is certainly not monumental, it is significant for the project.
+### v0.0.2 Milestone
+The current v0.0.1 of the compiler is capable of building a basic _Hello, World_ program. This represents the first major milestone of the project. With that reach, my sights are now on the second major milestone. This includes improvements to the architecture of the compiler, adding the ability to use variadic arguments, better type coverage, compiler directives, arithmatic, bracketed expressions and order of operations.
 
 ### High level concepts and ideas for Bolt
 _**Important:** Details listed below may change quickly and frequently, and is meant to represent a general idea of the concepts employed by the project currently._
