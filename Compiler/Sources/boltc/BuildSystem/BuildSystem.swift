@@ -75,7 +75,7 @@ extension BuildSystem {
 
         if emitVersion {
             print("Bolt Compiler")
-            print(" boltc v0.0.1")
+            print(" boltc v0.0.2")
             print(" MIT License - Copyright (c) 2019 Tom Hancocks")
             exit(0)
         }
