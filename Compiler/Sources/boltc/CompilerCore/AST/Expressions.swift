@@ -52,3 +52,27 @@ extension AbstractSyntaxTree {
         case `return`(Expression, location: Mark)
     }
 }
+
+// MARK: - Expression Location
+
+extension AbstractSyntaxTree.Expression {
+    var location: Mark {
+        switch self {
+        case let .string(_, location): return location
+        case let .integer(_, location): return location
+        case let .block(_, location): return location
+        case let .call(_, _, location): return location
+        case let .definition(declaration, _): return declaration.location
+        case let .functionDeclaration(_, _, _, location): return location
+        case let .parameterDeclaration(_, _, location): return location
+        case let .variableDeclaration(_, _, location): return location
+        case let .type(_, location): return location
+        case let .identifier(_, location): return location
+        case let .function(_, location): return location
+        case let .variable(_, location): return location
+        case let .parameter(_, location): return location
+        case let .voidReturn(location): return location
+        case let .return(_, location): return location
+        }
+    }
+}
