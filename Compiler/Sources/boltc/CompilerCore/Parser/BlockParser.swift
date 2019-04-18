@@ -43,6 +43,9 @@ class BlockParser: SubParserProtocol {
             expressions.append(try parser.parseNextExpression())
         }
 
+        // Consume to the closing '}'
+        scanner.advance()
+
         // Return a block expression to the caller.
         return .block(expressions, location: location)
     }

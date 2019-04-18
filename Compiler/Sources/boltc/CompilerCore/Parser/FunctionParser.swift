@@ -66,8 +66,16 @@ struct FunctionParser: SubParserProtocol {
                                                                                       returnType: returnType,
                                                                                       parameters: parameters,
                                                                                       location: declarationLocation)
-        
-        return functionDeclaration
+
+        // Check if we have a function definition. If we do then parse the code
+        // block and produce a definition, otherwise just return the declaration.
+        if BlockParser.test(scanner: scanner) {
+            let block = try BlockParser.parse(scanner: scanner, owner: parser)
+            return .definition(declaration: functionDeclaration, body: block)
+        }
+        else {
+            return functionDeclaration
+        }
     }
 
 }
