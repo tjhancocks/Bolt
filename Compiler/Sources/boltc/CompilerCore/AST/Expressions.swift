@@ -26,6 +26,7 @@ extension AbstractSyntaxTree {
 
         // Code Block, Groups
         case block([Expression], location: Mark)
+        case group([Expression], location: Mark)
 
         // Definitions
         case definition(declaration: Expression, body: Expression)
@@ -59,6 +60,7 @@ extension AbstractSyntaxTree.Expression {
         case let .string(_, location): return location
         case let .integer(_, location): return location
         case let .block(_, location): return location
+        case let .group(_, location): return location
         case let .call(_, _, location): return location
         case let .definition(declaration, _): return declaration.location
         case let .functionDeclaration(_, _, _, location): return location

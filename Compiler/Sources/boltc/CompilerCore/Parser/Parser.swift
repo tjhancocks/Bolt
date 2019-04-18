@@ -61,12 +61,12 @@ extension Parser {
     func parse<SubParserType>(
         parser _: SubParserType.Type
     ) throws -> AbstractSyntaxTree.Expression where SubParserType: SubParserProtocol {
-        return try SubParserType.parse(scanner: scanner)
+        return try SubParserType.parse(scanner: scanner, owner: self)
     }
 
 }
 
 protocol SubParserProtocol {
     static func test(scanner: Scanner<[Token]>) -> Bool
-    static func parse(scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Expression
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression
 }

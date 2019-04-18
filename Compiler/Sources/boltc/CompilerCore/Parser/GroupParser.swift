@@ -18,31 +18,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct TypeParser: SubParserProtocol {
+struct GroupParser: SubParserProtocol {
 
-    /// Check the upcoming tokens in the scanner to determine if they are the
-    /// beginning of a function.
     static func test(scanner: Scanner<[Token]>) -> Bool {
-        fatalError("A type is a contextual element and should be assumed to exist based on the context the parser is in.")
+        return scanner.test(expected:
+            .symbol(symbol: .leftParen, mark: .unknown)
+        )
     }
 
-    /// Consume a function declaration expression, and if possible a function
-    /// body for a function definition expression.
     static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
         let location = scanner.location
-        var typeTokens: [Token] = []
+        var expressions: [AbstractSyntaxTree.Expression] = []
 
-        while scanner.available {
-            if let token = scanner.peek(), let _ = try? Type.resolve(from: typeTokens + [token], location: location) {
+        // Assume that the '(' is present. The test should have been run first, or we've
+        // been invoked from an area that expects it.
+        scanner.advance()
+
+        groupParser: while scanner.available {
+            // If we hit a ')' then break out of the group.
+            if scanner.test(expected: .symbol(symbol: .rightParen, mark: .unknown)) {
+                break groupParser
+            }
+            expressions.append(try parser.parseNextExpression())
+
+            // If the next token is a ',' then we know to continue the list,
+            // otherwise it must be a ')' to terminate the list.
+            // Anything else is an error.
+            if scanner.test(expected: .symbol(symbol: .comma, mark: .unknown)) {
                 scanner.advance()
-                typeTokens.append(token)
-            } else {
-                break
+                continue groupParser
+            }
+            else if scanner.test(expected: .symbol(symbol: .rightParen, mark: .unknown)) {
+                break groupParser
+            }
+            else {
+                throw Error.parserError(location: scanner.location,
+                                        reason: .unexpectedTokenEncountered(token: scanner.advance()))
             }
         }
 
-        let type = try Type.resolve(from: typeTokens, location: location)
-        return .type(type, location: location)
+        return .group(expressions, location: location)
     }
 
 }

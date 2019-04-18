@@ -31,14 +31,14 @@ struct FunctionParser: SubParserProtocol {
 
     /// Consume a function declaration expression, and if possible a function
     /// body for a function definition expression.
-    static func parse(scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Expression {
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
         let declarationLocation = scanner.location
 
         // Advance by the first two tokens, which should be known to be 'func' '<'
         scanner.advance(by: 2)
 
         // Launch a sub parser for the return type.
-        let returnType = try TypeParser.parse(scanner: scanner)
+        let returnType = try TypeParser.parse(scanner: scanner, owner: parser)
 
         // The next token must be '>' to conclude the type definition
         try scanner.consume(expected:
@@ -51,16 +51,20 @@ struct FunctionParser: SubParserProtocol {
                                     reason: .expected(token: .identifier(text: "foo", mark: .unknown)))
         }
         scanner.advance()
+        
+        // Check for the presence of the parameter group. If it is not present then
+        // we have no parameters.
+        var parameters: [AbstractSyntaxTree.Expression] = []
+        if GroupParser.test(scanner: scanner) {
+            if case let .group(expressions, _) = try GroupParser.parse(scanner: scanner, owner: parser) {
+                parameters = expressions
+            }
+        }
 
-        // Parse the parameters of the function.
-        try scanner.consume(expected:
-            .symbol(symbol: .leftParen, mark: .unknown),
-            .symbol(symbol: .rightParen, mark: .unknown)
-        )
-
+        // Build the function declaration using the discovered information
         let functionDeclaration: AbstractSyntaxTree.Expression = .functionDeclaration(name: functionName,
                                                                                       returnType: returnType,
-                                                                                      parameters: [],
+                                                                                      parameters: parameters,
                                                                                       location: declarationLocation)
 
         return functionDeclaration
