@@ -28,7 +28,7 @@ struct GroupParser: SubParserProtocol {
 
     static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
         return try parse(scanner: scanner, owner: parser) { _, parser in
-            return try parser.parseNextExpression()
+            return try parser.parseExpression()
         }
     }
 

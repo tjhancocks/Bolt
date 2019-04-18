@@ -37,22 +37,36 @@ extension Parser {
         var expressions: [AbstractSyntaxTree.Expression] = []
 
         while scanner.available {
-            expressions.append(try parseNextExpression())
+            expressions.append(try parseGlobalExpression())
         }
 
         return AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName, expressions: expressions)
     }
 
     @discardableResult
-    func parseNextExpression() throws -> AbstractSyntaxTree.Expression {
+    func parseGlobalExpression() throws -> AbstractSyntaxTree.Expression {
         if test(parser: FunctionParser.self) {
             return try parse(parser: FunctionParser.self)
         }
-        else if test(parser: GroupParser.self) {
+        else {
+            guard let token = scanner.peek() else {
+                fatalError("Expected a token to present in the token stream, but found nil.")
+            }
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unrecognised(token: token))
+        }
+    }
+
+    @discardableResult
+    func parseExpression() throws -> AbstractSyntaxTree.Expression {
+        if test(parser: GroupParser.self) {
             return try parse(parser: GroupParser.self)
         }
         else if test(parser: BlockParser.self) {
             return try parse(parser: BlockParser.self)
+        }
+        else if test(parser: ReturnParser.self) {
+            return try parse(parser: ReturnParser.self)
         }
         else if test(parser: IntegerParser.self) {
             return try parse(parser: IntegerParser.self)
@@ -61,8 +75,11 @@ extension Parser {
             return try parse(parser: StringParser.self)
         }
         else {
+            guard let token = scanner.peek() else {
+                fatalError("Expected a token to present in the token stream, but found nil.")
+            }
             throw Error.parserError(location: scanner.location,
-                                    reason: .unrecognised(token: scanner.advance()))
+                                    reason: .unrecognised(token: token))
         }
     }
 

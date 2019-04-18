@@ -18,36 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class BlockParser: SubParserProtocol {
+struct ReturnParser: SubParserProtocol {
 
     static func test(scanner: Scanner<[Token]>) -> Bool {
         return scanner.test(expected:
-            .symbol(symbol: .leftBrace, mark: scanner.location)
+            .keyword(keyword: .return, mark: scanner.location)
         )
     }
 
     static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
         let location = scanner.location
-        var expressions: [AbstractSyntaxTree.Expression] = []
 
-        // Assume that the '{' is present. The test should have been run first, or we've
-        // been invoked from an area that expects it.
+        // Skip over the 'return' keyword token as it should have been confirmed to be present.
         scanner.advance()
 
-        blockParser: while scanner.available {
-            // If we hit a '}' then break out of the group.
-            if scanner.test(expected: .symbol(symbol: .rightBrace, mark: scanner.location)) {
-                break blockParser
-            }
-
-            expressions.append(try parser.parseExpression())
+        // We need to try and resolve another expression. If we can't resolve
+        // an expression then just assume that the return is a "void return".
+        if let expression = try? parser.parseExpression() {
+            return .return(expression, location: location)
         }
-
-        // Consume to the closing '}'
-        scanner.advance()
-
-        // Return a block expression to the caller.
-        return .block(expressions, location: location)
+        else {
+            return .voidReturn(location: location)
+        }
     }
 
 }
