@@ -85,6 +85,7 @@ extension AbstractSyntaxTree.Expression {
         case let .type(type, _): return type
         case let .call(identifier, _, _): return identifier.type
         case let .block(body, _): return body.last?.type ?? .none
+        case let .group(body, _): return body.last?.type ?? .none
         case let .boundIdentifier(.functionDeclaration(_, returnType, _, _), _): return returnType.type
         case let .boundIdentifier(.variableDeclaration(_, type, _), _): return type.type
         case let .boundIdentifier(.parameterDeclaration(_, type, _), _): return type.type
