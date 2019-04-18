@@ -36,7 +36,7 @@ extension AbstractSyntaxTree {
         case parameterDeclaration(name: String, type: Expression, location: Mark)
 
         // Variables
-        case variableDeclaration(name: String, type: Expression, location: Mark)
+        case constantDeclaration(name: String, type: Expression, location: Mark)
 
         // Types
         case type(Type, location: Mark)
@@ -65,7 +65,7 @@ extension AbstractSyntaxTree.Expression {
         case let .definition(declaration, _): return declaration.location
         case let .functionDeclaration(_, _, _, location): return location
         case let .parameterDeclaration(_, _, location): return location
-        case let .variableDeclaration(_, _, location): return location
+        case let .constantDeclaration(_, _, location): return location
         case let .type(_, location): return location
         case let .identifier(_, location): return location
         case let .boundIdentifier(_, location): return location
@@ -87,7 +87,7 @@ extension AbstractSyntaxTree.Expression {
         case let .block(body, _): return body.last?.type ?? .none
         case let .group(body, _): return body.last?.type ?? .none
         case let .boundIdentifier(.functionDeclaration(_, returnType, _, _), _): return returnType.type
-        case let .boundIdentifier(.variableDeclaration(_, type, _), _): return type.type
+        case let .boundIdentifier(.constantDeclaration(_, type, _), _): return type.type
         case let .boundIdentifier(.parameterDeclaration(_, type, _), _): return type.type
         case let .return(expr, _): return expr.type
 

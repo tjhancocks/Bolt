@@ -48,6 +48,9 @@ extension Parser {
         if test(parser: FunctionParser.self) {
             return try parse(parser: FunctionParser.self)
         }
+        else if test(parser: ConstantParser.self) {
+            return try parse(parser: ConstantParser.self)
+        }
         else {
             guard let token = scanner.peek() else {
                 fatalError("Expected a token to present in the token stream, but found nil.")
@@ -73,6 +76,9 @@ extension Parser {
         }
         else if test(parser: StringParser.self) {
             return try parse(parser: StringParser.self)
+        }
+        else if test(parser: ConstantParser.self) {
+            return try parse(parser: ConstantParser.self)
         }
         else {
             guard let token = scanner.peek() else {
