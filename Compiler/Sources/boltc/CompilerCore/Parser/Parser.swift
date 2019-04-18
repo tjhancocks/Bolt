@@ -45,7 +45,28 @@ extension Parser {
 
     @discardableResult
     func parseNextExpression() throws -> AbstractSyntaxTree.Expression {
+        if test(parser: FunctionParser.self) {
+            return try parse(parser: FunctionParser.self)
+        }
+
         throw Error.parserError(location: .unknown, reason: .unexpectedEndOfTokenStream)
     }
 
+    @discardableResult
+    func test<SubParserType>(parser _: SubParserType.Type) -> Bool where SubParserType: SubParserProtocol {
+        return SubParserType.test(scanner: scanner)
+    }
+
+    @discardableResult
+    func parse<SubParserType>(
+        parser _: SubParserType.Type
+    ) throws -> AbstractSyntaxTree.Expression where SubParserType: SubParserProtocol {
+        return try SubParserType.parse(scanner: scanner)
+    }
+
+}
+
+protocol SubParserProtocol {
+    static func test(scanner: Scanner<[Token]>) -> Bool
+    static func parse(scanner: Scanner<[Token]>) throws -> AbstractSyntaxTree.Expression
 }
