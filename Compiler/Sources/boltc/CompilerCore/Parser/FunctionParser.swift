@@ -48,7 +48,7 @@ struct FunctionParser: SubParserProtocol {
         // Extract the function name
         guard case let .identifier(functionName, _)? = scanner.peek() else {
             throw Error.parserError(location: scanner.location,
-                                    reason: .expected(token: .identifier(text: "foo", mark: .unknown)))
+                                    reason: .expected(token: .identifier(text: "foo", mark: scanner.location)))
         }
         scanner.advance()
         
@@ -56,7 +56,7 @@ struct FunctionParser: SubParserProtocol {
         // we have no parameters.
         var parameters: [AbstractSyntaxTree.Expression] = []
         if GroupParser.test(scanner: scanner) {
-            if case let .group(expressions, _) = try GroupParser.parse(scanner: scanner, owner: parser) {
+            if case let .group(expressions, _) = try GroupParser.parse(scanner: scanner, owner: parser, parseFn: parameter) {
                 parameters = expressions
             }
         }
@@ -66,8 +66,36 @@ struct FunctionParser: SubParserProtocol {
                                                                                       returnType: returnType,
                                                                                       parameters: parameters,
                                                                                       location: declarationLocation)
-
+        
         return functionDeclaration
+    }
+
+}
+
+// MARK: - Parameter Parser
+
+extension FunctionParser {
+
+    static func parameter(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        // Fetch the name of the parameter.
+        guard case let .identifier(parameterName, location)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .identifier(text: "foo", mark: scanner.location)))
+        }
+        scanner.advance()
+
+        // The parameter name and type delimiter is ':'
+        guard case .symbol(.colon, _)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .symbol(symbol: .colon, mark: scanner.location)))
+        }
+        scanner.advance()
+
+        // Fetch the type of the parameter
+        let type = try TypeParser.parse(scanner: scanner, owner: parser)
+
+        // Construct the final parameter declaration.
+        return .parameterDeclaration(name: parameterName, type: type, location: location)
     }
 
 }
