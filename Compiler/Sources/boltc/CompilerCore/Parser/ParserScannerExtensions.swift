@@ -21,10 +21,10 @@
 extension Scanner where T.Element == Token {
 
     @discardableResult
-    func test(expected: T.Element...) -> Bool {
+    func test(weakIdentifier: Bool = false, expected: T.Element...) -> Bool {
         var matched: [T.Element] = []
 
-        while expected.count > matched.count, let peeked = peek(ahead: matched.count), peeked.matches(expected[matched.count]) {
+        while expected.count > matched.count, let peeked = peek(ahead: matched.count), peeked.matches(expected[matched.count], weakIdentifier: weakIdentifier) {
             matched.append(peeked)
         }
 

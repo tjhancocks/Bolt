@@ -80,6 +80,12 @@ extension Parser {
         else if test(parser: ConstantParser.self) {
             return try parse(parser: ConstantParser.self)
         }
+        else if test(parser: CallParser.self) {
+            return try parse(parser: CallParser.self)
+        }
+        else if test(parser: IdentifierParser.self) {
+            return try parse(parser: IdentifierParser.self)
+        }
         else {
             guard let token = scanner.peek() else {
                 fatalError("Expected a token to present in the token stream, but found nil.")

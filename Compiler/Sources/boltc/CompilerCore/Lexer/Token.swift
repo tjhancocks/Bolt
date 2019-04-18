@@ -30,7 +30,7 @@ enum Token: Equatable {
 // MARK: - Matching
 
 extension Token {
-    func matches(_ token: Token, absolute: Bool = false) -> Bool {
+    func matches(_ token: Token, absolute: Bool = false, weakIdentifier: Bool = false) -> Bool {
         if absolute {
             return token == self
         }
@@ -39,7 +39,7 @@ extension Token {
         case (.string, .string):                                return true
         case (.integer, .integer):                              return true
         case (.float, .float):                                  return true
-        case let (.identifier(lhs, _), .identifier(rhs, _)):    return (lhs == rhs)
+        case let (.identifier(lhs, _), .identifier(rhs, _)):    return (weakIdentifier == true) || (lhs == rhs)
         case let (.keyword(lhs, _), .keyword(rhs, _)):          return (lhs == rhs)
         case let (.symbol(lhs, _), .symbol(rhs, _)):            return (lhs == rhs)
         default:                                                return false
