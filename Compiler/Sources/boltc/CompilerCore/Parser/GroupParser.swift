@@ -27,6 +27,13 @@ struct GroupParser: SubParserProtocol {
     }
 
     static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        return try parse(scanner: scanner, parseFn: parser.parseNextExpression)
+    }
+
+    static func parse(
+        scanner: Scanner<[Token]>,
+        parseFn: () throws -> AbstractSyntaxTree.Expression
+    ) throws -> AbstractSyntaxTree.Expression {
         let location = scanner.location
         var expressions: [AbstractSyntaxTree.Expression] = []
 
@@ -39,7 +46,7 @@ struct GroupParser: SubParserProtocol {
             if scanner.test(expected: .symbol(symbol: .rightParen, mark: .unknown)) {
                 break groupParser
             }
-            expressions.append(try parser.parseNextExpression())
+            expressions.append(try parseFn())
 
             // If the next token is a ',' then we know to continue the list,
             // otherwise it must be a ')' to terminate the list.
