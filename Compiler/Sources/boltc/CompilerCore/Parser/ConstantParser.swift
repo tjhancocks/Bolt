@@ -53,7 +53,16 @@ struct ConstantParser: SubParserProtocol {
                                                                                       type: type,
                                                                                       location: declarationLocation)
 
-        return constantDeclaration
+        // Check if we have a constant definition. If we do then parse the expression
+        // that provides its value.
+        if scanner.test(expected: .symbol(symbol: .equals, mark: scanner.location)) {
+            scanner.advance()
+            let expression = try parser.parseExpression()
+            return .definition(declaration: constantDeclaration, body: expression)
+        }
+        else {
+            return constantDeclaration
+        }
     }
 
 }
