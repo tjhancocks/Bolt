@@ -57,6 +57,9 @@ extension Parser {
         else if test(parser: IntegerParser.self) {
             return try parse(parser: IntegerParser.self)
         }
+        else if test(parser: StringParser.self) {
+            return try parse(parser: StringParser.self)
+        }
         else {
             throw Error.parserError(location: scanner.location,
                                     reason: .unrecognised(token: scanner.advance()))
