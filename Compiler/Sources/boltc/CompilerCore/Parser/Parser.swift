@@ -37,7 +37,13 @@ extension Parser {
         var expressions: [AbstractSyntaxTree.Expression] = []
 
         while scanner.available {
-            expressions.append(try parseGlobalExpression())
+            let expr = try parseGlobalExpression()
+            if case let .module(moduleExpressions, _) = expr {
+                expressions.append(contentsOf: moduleExpressions)
+            }
+            else {
+                expressions.append(expr)
+            }
         }
 
         return AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName, expressions: expressions)
@@ -50,6 +56,9 @@ extension Parser {
         }
         else if test(parser: ConstantParser.self) {
             return try parse(parser: ConstantParser.self)
+        }
+        else if test(parser: ImportParser.self) {
+            return try parse(parser: ImportParser.self)
         }
         else {
             guard let token = scanner.peek() else {

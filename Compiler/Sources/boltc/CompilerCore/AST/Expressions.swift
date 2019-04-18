@@ -25,6 +25,7 @@ extension AbstractSyntaxTree {
         case integer(Int, location: Mark)
 
         // Code Block, Groups
+        case module([Expression], location: Mark)
         case block([Expression], location: Mark)
         case group([Expression], location: Mark)
 
@@ -59,6 +60,7 @@ extension AbstractSyntaxTree.Expression {
         switch self {
         case let .string(_, location): return location
         case let .integer(_, location): return location
+        case let .module(_, location): return location
         case let .block(_, location): return location
         case let .group(_, location): return location
         case let .call(_, _, location): return location
