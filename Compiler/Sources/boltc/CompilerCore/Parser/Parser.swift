@@ -48,6 +48,15 @@ extension Parser {
         if test(parser: FunctionParser.self) {
             return try parse(parser: FunctionParser.self)
         }
+        else if test(parser: GroupParser.self) {
+            return try parse(parser: GroupParser.self)
+        }
+        else if test(parser: BlockParser.self) {
+            return try parse(parser: BlockParser.self)
+        }
+        else if test(parser: IntegerParser.self) {
+            return try parse(parser: IntegerParser.self)
+        }
         else {
             throw Error.parserError(location: scanner.location,
                                     reason: .unrecognised(token: scanner.advance()))
