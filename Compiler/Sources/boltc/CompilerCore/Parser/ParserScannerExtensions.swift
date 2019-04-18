@@ -21,6 +21,17 @@
 extension Scanner where T.Element == Token {
 
     @discardableResult
+    func test(expected: T.Element...) -> Bool {
+        var matched: [T.Element] = []
+
+        while expected.count > matched.count, let peeked = peek(ahead: matched.count), peeked.matches(expected[matched.count]) {
+            matched.append(peeked)
+        }
+
+        return matched.count == expected.count
+    }
+
+    @discardableResult
     func consume(expected: T.Element...) throws -> [T.Element] {
         var expectedTokens = expected
         var matched: [T.Element] = []
