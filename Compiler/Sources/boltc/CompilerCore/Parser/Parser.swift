@@ -48,8 +48,10 @@ extension Parser {
         if test(parser: FunctionParser.self) {
             return try parse(parser: FunctionParser.self)
         }
-
-        throw Error.parserError(location: .unknown, reason: .unexpectedEndOfTokenStream)
+        else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unrecognised(token: scanner.advance()))
+        }
     }
 
     @discardableResult

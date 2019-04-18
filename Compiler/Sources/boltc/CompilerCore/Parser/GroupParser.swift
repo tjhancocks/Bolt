@@ -67,6 +67,9 @@ struct GroupParser: SubParserProtocol {
             }
         }
 
+        // Consume the closing ')'
+        scanner.advance()
+
         return .group(expressions, location: location)
     }
 
