@@ -28,16 +28,6 @@ class Sema {
 
 extension Sema {
     func performAnalysis() throws {
-        try ast.traverse { node in
-            if let semaNode = node as? SemaNode {
-                return try semaNode.performSemanticAnalysis()
-            } else {
-                return [node]
-            }
-        }
-    }
-}
 
-protocol SemaNode {
-    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node]
+    }
 }
