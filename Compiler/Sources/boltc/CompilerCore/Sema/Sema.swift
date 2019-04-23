@@ -20,9 +20,11 @@
 
 class Sema {
     private(set) var ast: AbstractSyntaxTree
+    private(set) var symbolTable: SymbolTable
 
     init(ast: AbstractSyntaxTree) {
         self.ast = ast
+        self.symbolTable = .init()
     }
 }
 
@@ -44,6 +46,9 @@ extension Sema {
         case let .block(expressions, location):
             return [.block(try analyse(expressions: expressions), location: location)]
 
+        case .functionDeclaration, .definition(.functionDeclaration, _):
+            return try FunctionSema.performSemanticAnalysis(on: expression, for: self)
+
         default:
             // Simply return unhandled cases as we're not performing any semantic
             // analysis of them yet (if needed at all).
@@ -52,4 +57,6 @@ extension Sema {
     }
 }
 
-
+protocol SemaProtocol {
+    static func performSemanticAnalysis(on expr: AbstractSyntaxTree.Expression, for sema: Sema) throws -> [AbstractSyntaxTree.Expression]
+}
