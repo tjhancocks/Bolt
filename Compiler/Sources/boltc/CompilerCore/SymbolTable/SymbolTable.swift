@@ -60,17 +60,17 @@ class SymbolTable {
         _ = symbolScopes.popLast()
     }
 
-    func find(symbolNamed name: String) -> AbstractSyntaxTree.Node? {
-        return currentScope.first(where: { $0.name == name })?.node
+    func find(symbolNamed name: String) -> AbstractSyntaxTree.Expression? {
+        return currentScope.first(where: { $0.name == name })?.expression
     }
 
-    func defineSymbol(name: String, node: AbstractSyntaxTree.Node, location: Mark) throws {
+    func defineSymbol(name: String, expression: AbstractSyntaxTree.Expression, location: Mark) throws {
         if let original = find(symbolNamed: name) {
-            throw Error.parserError(location: location, reason: .redefinition(of: original, with: node))
+            throw Error.parserError(location: location, reason: .redefinition(of: original, with: expression))
         }
 
         // At this point we are allowed to create.
-        currentScope.append(Symbol(name: name, fullName: name, node: node))
+        currentScope.append(Symbol(name: name, fullName: name, expression: expression))
     }
 
     func add(rootSymbols: [SymbolTable.Symbol]) {
@@ -83,12 +83,12 @@ extension SymbolTable {
     class Symbol {
         let name: String
         let fullName: String
-        let node: AbstractSyntaxTree.Node
+        let expression: AbstractSyntaxTree.Expression
 
-        init(name: String, fullName: String, node: AbstractSyntaxTree.Node) {
+        init(name: String, fullName: String, expression: AbstractSyntaxTree.Expression) {
             self.name = name
             self.fullName = fullName
-            self.node = node
+            self.expression = expression
         }
     }
 }
