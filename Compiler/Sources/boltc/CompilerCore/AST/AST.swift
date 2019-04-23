@@ -84,6 +84,10 @@ class AbstractSyntaxTree {
             self.modules.insert(module, at: 0 + index)
         }
     }
+
+    func update(expressions: [AbstractSyntaxTree.Expression]) {
+        self.expressions = expressions
+    }
 }
 
 extension AbstractSyntaxTree: CustomStringConvertible {

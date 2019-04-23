@@ -28,6 +28,28 @@ class Sema {
 
 extension Sema {
     func performAnalysis() throws {
+        ast.update(expressions: try analyse(expressions: ast.expressions))
+    }
 
+    func analyse(expressions: [AbstractSyntaxTree.Expression]) throws -> [AbstractSyntaxTree.Expression] {
+        var resultExpressions: [AbstractSyntaxTree.Expression] = []
+        for expr in expressions {
+            resultExpressions.append(contentsOf: try analyse(expression: expr))
+        }
+        return resultExpressions
+    }
+
+    func analyse(expression: AbstractSyntaxTree.Expression) throws -> [AbstractSyntaxTree.Expression] {
+        switch expression {
+        case let .block(expressions, location):
+            return [.block(try analyse(expressions: expressions), location: location)]
+
+        default:
+            // Simply return unhandled cases as we're not performing any semantic
+            // analysis of them yet (if needed at all).
+            return [expression]
+        }
     }
 }
+
+
