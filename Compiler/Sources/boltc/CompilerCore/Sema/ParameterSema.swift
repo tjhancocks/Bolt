@@ -18,11 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum SemaError {
-    case expectedFunctionForCall
-    case incorrectArgumentCount(expected: Int, got: Int)
-    case argumentTypeMismatch(expected: Type, got: Type, at: Int)
-    case illegalStorageType(got: Type)
-    case expectedFunctionDeclarationDefinition(got: AbstractSyntaxTree.Expression)
-    case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
+struct ParameterSema: SemaProtocol {
+
+    static func performSemanticAnalysis(
+        on expr: AbstractSyntaxTree.Expression,
+        for sema: Sema
+    ) throws -> [AbstractSyntaxTree.Expression] {
+        if case let .parameterDeclaration(name, type, location) = expr {
+
+            // Check that the type is a valid storage type. For example, 'None'
+            // is not valid in this context.
+            guard type.type.isValidStorageType else {
+                throw Error.semaError(location: expr.location,
+                                      reason: .illegalStorageType(got: type.type))
+            }
+
+            // Define the symbol.
+            try sema.symbolTable.defineSymbol(name: name, expression: expr, isDeclaration: true, location: location)
+
+            return [expr]
+        } else {
+            throw Error.semaError(location: expr.location, reason: .expectedParameterDeclaration(got: expr))
+        }
+    }
+
 }
