@@ -22,4 +22,5 @@ enum SemaError {
     case expectedFunctionForCall
     case incorrectArgumentCount(expected: Int, got: Int)
     case argumentTypeMismatch(expected: Type, got: Type, at: Int)
+    case expectedFunctionDeclarationDefinition(got: AbstractSyntaxTree.Expression)
 }

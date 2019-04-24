@@ -31,7 +31,8 @@ struct FunctionSema: SemaProtocol {
             return try performSemanticAnalysis(onFunction: declaration, withBody: body, for: sema)
         }
         else {
-            fatalError()
+            throw Error.semaError(location: expr.location,
+                                  reason: .expectedFunctionDeclarationDefinition(got: expr))
         }
     }
 
@@ -41,7 +42,8 @@ struct FunctionSema: SemaProtocol {
         for sema: Sema
     ) throws -> [AbstractSyntaxTree.Expression] {
         guard case let .functionDeclaration(name, returnType, parameters, location) = declaration else {
-            fatalError()
+            throw Error.semaError(location: declaration.location,
+                                  reason: .expectedFunctionDeclarationDefinition(got: declaration))
         }
 
         if let body = body {
