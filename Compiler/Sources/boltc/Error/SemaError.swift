@@ -23,6 +23,8 @@ enum SemaError {
     case incorrectArgumentCount(expected: Int, got: Int)
     case argumentTypeMismatch(expected: Type, got: Type, at: Int)
     case illegalStorageType(got: Type)
+    case typeMismatch(expected: Type, got: Type)
     case expectedFunctionDeclarationDefinition(got: AbstractSyntaxTree.Expression)
     case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
+    case expectedConstantDeclarationDefinition(got: AbstractSyntaxTree.Expression)
 }
