@@ -43,6 +43,11 @@ struct CallSema: SemaProtocol {
         }
 
         // Analyse the arguments and check the types against the function parameters.
+        guard arguments.count == parameters.count else {
+            throw Error.semaError(location: location,
+                                  reason: .incorrectArgumentCount(expected: parameters.count, got: arguments.count))
+        }
+        
         let semaArgs = try sema.analyse(expressions: arguments)
         for (offset, (arg, parameter)) in zip(semaArgs, parameters).enumerated() {
             if arg.type.resolvedType != parameter.type.resolvedType {
