@@ -55,6 +55,9 @@ extension Sema {
         case .constantDeclaration, .definition(.constantDeclaration, _):
             return try ConstantSema.performSemanticAnalysis(on: expression, for: self)
 
+
+        case .identifier:
+            return try IdentifierSema.performSemanticAnalysis(on: expression, for: self)
         default:
             // Simply return unhandled cases as we're not performing any semantic
             // analysis of them yet (if needed at all).

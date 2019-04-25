@@ -18,15 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum SemaError {
-    case expectedFunctionForCall
-    case incorrectArgumentCount(expected: Int, got: Int)
-    case argumentTypeMismatch(expected: Type, got: Type, at: Int)
-    case illegalStorageType(got: Type)
-    case typeMismatch(expected: Type, got: Type)
-    case expectedFunctionDeclarationDefinition(got: AbstractSyntaxTree.Expression)
-    case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
-    case expectedConstantDeclarationDefinition(got: AbstractSyntaxTree.Expression)
-    case unknownIdentifier(name: String)
-    case expectedUnboundIdentifier(got: AbstractSyntaxTree.Expression)
+struct IdentifierSema: SemaProtocol {
+
+    static func performSemanticAnalysis(
+        on expr: AbstractSyntaxTree.Expression,
+        for sema: Sema
+    ) throws -> [AbstractSyntaxTree.Expression] {
+        guard case let .identifier(name, location) = expr else {
+            throw Error.semaError(location: expr.location,
+                                  reason: .expectedUnboundIdentifier(got: expr))
+        }
+
+        guard let symbol = sema.symbolTable.find(symbolNamed: name) else {
+            throw Error.semaError(location: location,
+                                  reason: .unknownIdentifier(name: name))
+        }
+
+        return [.boundIdentifier(symbol.expression, location: location)]
+    }
+
 }
