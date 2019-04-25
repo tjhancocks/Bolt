@@ -92,6 +92,7 @@ extension AbstractSyntaxTree.Expression {
         case let .boundIdentifier(.constantDeclaration(_, type, _), _): return type.type
         case let .boundIdentifier(.parameterDeclaration(_, type, _), _): return type.type
         case let .return(expr, _): return expr.type
+        case let .parameterDeclaration(_, type, _): return type.type
 
             // If an expression is unhandled, treat it as none.
             // Not all expressions have a type.

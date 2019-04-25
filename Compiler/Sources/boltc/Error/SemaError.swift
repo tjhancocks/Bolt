@@ -27,6 +27,8 @@ enum SemaError {
     case expectedFunctionDeclarationDefinition(got: AbstractSyntaxTree.Expression)
     case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
     case expectedConstantDeclarationDefinition(got: AbstractSyntaxTree.Expression)
+    case expectedCallExpression(got: AbstractSyntaxTree.Expression)
     case unknownIdentifier(name: String)
+    case expectedFunctionIdentifier(got: AbstractSyntaxTree.Expression)
     case expectedUnboundIdentifier(got: AbstractSyntaxTree.Expression)
 }
