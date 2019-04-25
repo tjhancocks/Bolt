@@ -21,7 +21,6 @@
 class AbstractSyntaxTree {
 
     private(set) var moduleName: String
-    private(set) var symbolTable: SymbolTable = .init()
     private(set) var expressions: [AbstractSyntaxTree.Expression] = []
 
     init(mainModuleName moduleName: String, expressions: [AbstractSyntaxTree.Expression] = []) {
