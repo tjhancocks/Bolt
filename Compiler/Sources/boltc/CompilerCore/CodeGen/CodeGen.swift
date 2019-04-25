@@ -21,63 +21,10 @@
 import LLVM
 
 class CodeGen {
-    private(set) var context: Context
     private(set) var ast: AbstractSyntaxTree
 
     init(ast: AbstractSyntaxTree) {
-        let module = LLVM.Module(name: ast.initialModule.name)
+        let module = LLVM.Module(name: ast.moduleName)
         self.ast = ast
-        self.context = .init(module: module, builder: .init(module: module))
-    }
-}
-
-extension CodeGen {
-    class Context {
-        let module: LLVM.Module
-        let builder: LLVM.IRBuilder
-        var parameters: [String:LLVM.IRValue]
-        var variables: [String:LLVM.IRValue]
-
-        init(module: LLVM.Module, builder: LLVM.IRBuilder) {
-            self.module = module
-            self.builder = builder
-            self.parameters = [:]
-            self.variables = [:]
-        }
-    }
-}
-
-extension CodeGen {
-    func generateLLVMModule() throws -> LLVM.Module {
-        try ast.modules.forEach { node in
-            try node.generate(for: context)
-        }
-        return context.module
-    }
-}
-
-protocol CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue?
-
-    func global(named name: String, for context: CodeGen.Context) throws -> Global?
-}
-
-extension CodeGeneratorProtocol {
-    func global(named name: String, for context: CodeGen.Context) throws -> Global? {
-        return nil
-    }
-}
-
-extension AbstractSyntaxTree.ModuleNode: CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue? {
-        try children.forEach { node in
-            guard let node = node as? CodeGeneratorProtocol else {
-                return
-            }
-            _ = try node.generate(for: context)
-        }
-        return nil
     }
 }
