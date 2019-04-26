@@ -22,9 +22,31 @@ import LLVM
 
 class CodeGen {
     private(set) var ast: AbstractSyntaxTree
+    private(set) var module: LLVM.Module
+    private(set) var builder: LLVM.IRBuilder
 
     init(ast: AbstractSyntaxTree) {
         let module = LLVM.Module(name: ast.moduleName)
+        self.builder = LLVM.IRBuilder(module: module)
+        self.module = module
         self.ast = ast
     }
+
+    func emit() throws -> LLVM.Module {
+        fatalError("Unimplemented")
+    }
+
+    func emit(expressions: [AbstractSyntaxTree.Expression]) throws -> LLVM.IRValue {
+        fatalError("Unimplemented")
+    }
+
+    func emit(expression: AbstractSyntaxTree.Expression) throws -> LLVM.IRValue {
+        fatalError("Unimplemented")
+    }
+}
+
+protocol CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> LLVM.IRValue
+
 }
