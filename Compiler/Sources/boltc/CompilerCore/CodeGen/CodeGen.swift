@@ -33,20 +33,34 @@ class CodeGen {
     }
 
     func emit() throws -> LLVM.Module {
-        fatalError("Unimplemented")
+        _ = try emit(expressions: ast.expressions)
+        return module
     }
 
-    func emit(expressions: [AbstractSyntaxTree.Expression]) throws -> LLVM.IRValue {
-        fatalError("Unimplemented")
+    func emit(expressions: [AbstractSyntaxTree.Expression]) throws -> LLVM.IRValue? {
+        var outputValue: LLVM.IRValue?
+
+        for expression in expressions {
+            // We're only interested in the last value of a series of expressions.
+            outputValue = try emit(expression: expression)
+        }
+
+        return outputValue
     }
 
-    func emit(expression: AbstractSyntaxTree.Expression) throws -> LLVM.IRValue {
-        fatalError("Unimplemented")
+    func emit(expression: AbstractSyntaxTree.Expression) throws -> LLVM.IRValue? {
+        switch expression {
+        case .functionDeclaration, .definition(.functionDeclaration, _):
+            return try FunctionCodeGen.emit(for: expression, in: self)
+
+        default:
+            return nil
+        }
     }
 }
 
 protocol CodeGenProtocol {
 
-    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> LLVM.IRValue
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> LLVM.IRValue?
 
 }

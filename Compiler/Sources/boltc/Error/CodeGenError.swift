@@ -19,5 +19,6 @@
 // SOFTWARE.
 
 enum CodeGenError {
+    case expectedFunctionDeclaration(got: AbstractSyntaxTree.Expression)
     case missingFunctionDeclaration(function: String)
 }
