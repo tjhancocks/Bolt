@@ -25,11 +25,19 @@ class CodeGen {
     private(set) var module: LLVM.Module
     private(set) var builder: LLVM.IRBuilder
 
+    private(set) var autoLabelCount: Int = 0
+
     init(ast: AbstractSyntaxTree) {
         let module = LLVM.Module(name: ast.moduleName)
         self.builder = LLVM.IRBuilder(module: module)
         self.module = module
         self.ast = ast
+    }
+
+    func generateAutoLabel() -> String {
+        let label = "L\(autoLabelCount)"
+        autoLabelCount += 1
+        return label
     }
 
     func emit() throws -> LLVM.Module {
@@ -53,6 +61,19 @@ class CodeGen {
         case .functionDeclaration, .definition(.functionDeclaration, _):
             return try FunctionCodeGen.emit(for: expression, in: self)
 
+        case .constantDeclaration, .definition(.constantDeclaration, _):
+            return try ConstantCodeGen.emit(for: expression, in: self)
+
+        default:
+            return nil
+        }
+    }
+
+    func emitGlobal(valueExpression: AbstractSyntaxTree.Expression, named name: String? = nil) throws -> LLVM.Global? {
+        switch valueExpression {
+        case .string:
+            return try StringCodeGen.emitGlobal(for: valueExpression, named: name, in: self)
+
         default:
             return nil
         }
@@ -60,7 +81,9 @@ class CodeGen {
 }
 
 protocol CodeGenProtocol {
-
     static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> LLVM.IRValue?
+}
 
+protocol GlobalCodeGenProtocol {
+    static func emitGlobal(for expr: AbstractSyntaxTree.Expression, named name: String?, in codeGen: CodeGen) throws -> LLVM.Global?
 }

@@ -18,10 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum CodeGenError {
-    case expectedFunctionDeclaration(got: AbstractSyntaxTree.Expression)
-    case expectedString(got: AbstractSyntaxTree.Expression)
-    case expectedInteger(got: AbstractSyntaxTree.Expression)
-    case expectedConstantDeclaration(got: AbstractSyntaxTree.Expression)
-    case missingFunctionDeclaration(function: String)
+import LLVM
+
+struct StringCodeGen: CodeGenProtocol, GlobalCodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        guard case let .string(value, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedString(got: expr))
+        }
+
+        if codeGen.builder.currentFunction != nil {
+            return codeGen.builder.buildGlobalStringPtr(value)
+        }
+        else {
+            return try emitGlobal(for: expr, in: codeGen)
+        }
+    }
+
+    static func emitGlobal(for expr: AbstractSyntaxTree.Expression, named name: String? = nil, in codeGen: CodeGen) throws -> Global? {
+        guard case let .string(value, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedString(got: expr))
+        }
+
+        return codeGen.builder.addGlobalString(name: name ?? codeGen.generateAutoLabel(), value: value)
+    }
+
 }
