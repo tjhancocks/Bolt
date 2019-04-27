@@ -91,6 +91,9 @@ class CodeGen {
         case .call:
             return try CallCodeGen.emit(for: expression, in: self)
 
+        case .voidReturn, .return:
+            return try ReturnCodeGen.emit(for: expression, in: self)
+
         case .block:
             return try BlockCodeGen.emit(for: expression, in: self)
 
