@@ -18,23 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class IntegerLiteralNode: Node {
-        private(set) var value: Int
-        private(set) var mark: Mark
+struct IdentifierSema: SemaProtocol {
 
-        override var valueType: Type {
-            return .int
+    static func performSemanticAnalysis(
+        on expr: AbstractSyntaxTree.Expression,
+        for sema: Sema
+    ) throws -> [AbstractSyntaxTree.Expression] {
+        guard case let .identifier(name, location) = expr else {
+            throw Error.semaError(location: expr.location,
+                                  reason: .expectedUnboundIdentifier(got: expr))
         }
 
-        init(value: Int, mark: Mark) {
-            self.value = value
-            self.mark = mark
+        guard let symbol = sema.symbolTable.find(symbolNamed: name) else {
+            throw Error.semaError(location: location,
+                                  reason: .unknownIdentifier(name: name))
         }
 
-        override var description: String {
-            return "Integer '\(value)' [\(mark)]"
-        }
+        return [.boundIdentifier(symbol.expression, location: location)]
     }
-}
 
+}

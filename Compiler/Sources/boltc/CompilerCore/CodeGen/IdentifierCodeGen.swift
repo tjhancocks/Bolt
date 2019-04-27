@@ -20,14 +20,29 @@
 
 import LLVM
 
-extension AbstractSyntaxTree.StringLiteralNode: CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue? {
-        let string = context.builder.buildGlobalStringPtr(value)
-        return string
+struct IdentifierCodeGen: CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        if case let .boundIdentifier(.constantDeclaration(name, type, _), _) = expr {
+            // Constant
+            guard let constant = codeGen.variables[name] else {
+                return nil
+            }
+
+            if type.type.resolvedType == .pointer(.int8) {
+                return codeGen.builder.buildGEP(constant, indices: [0, 0])
+            } else {
+                return constant
+            }
+        }
+        else if case let .boundIdentifier(.parameterDeclaration(name, _, _), _) = expr {
+            // Parameter
+            return codeGen.parameters[name]
+        }
+        else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .unexpectedExpression(got: expr))
+        }
     }
 
-    func global(named name: String, for context: CodeGen.Context) throws -> Global? {
-        return context.builder.addGlobalString(name: name, value: value)
-    }
 }

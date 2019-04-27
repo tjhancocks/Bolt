@@ -18,42 +18,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct ImportParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .keyword(.import, _)? = scanner.peek(), case .identifier? = scanner.peek(ahead: 1) {
-            return true
-        } else if case .keyword(.import, _)? = scanner.peek(), case .string? = scanner.peek(ahead: 1) {
-            return true
-        } else {
-            return false
-        }
+struct ImportParser: SubParserProtocol {
+
+    private static func testIdentifierVariant(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(weakIdentifier: true, expected:
+            .keyword(keyword: .import, mark: scanner.location),
+			.identifier(text: "foo", mark: scanner.location)
+        )
     }
 
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        let token = scanner.advance()
-        if case .keyword(.import, _) = token, case .identifier(let file, _)? = scanner.peek() {
-            scanner.advance()
-            let imported = try self.import(file: file)
-            if let firstModule = imported.modules.first {
-                ast.add(modules: imported.modules, symbols: imported.symbolTable.rootSymbols)
-                return firstModule
-            }
+    private static func testStringVariant(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected:
+            .keyword(keyword: .import, mark: scanner.location),
+            .string(text: "foo", mark: scanner.location)
+        )
+    }
 
-        } else if case .keyword(.import, _) = token, case .string(let file, _)? = scanner.peek() {
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return testIdentifierVariant(scanner: scanner) || testStringVariant(scanner: scanner)
+    }
+
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        if testIdentifierVariant(scanner: scanner) {
             scanner.advance()
-            let imported = try self.import(file: file)
-            if let firstModule = imported.modules.first {
-                ast.add(modules: imported.modules, symbols: imported.symbolTable.rootSymbols)
-                return firstModule
+            if case let .identifier(file, location)? = scanner.peek() {
+                scanner.advance()
+                return .module(try self.import(file: file), location: location)
             }
-            
+        }
+        else if testStringVariant(scanner: scanner) {
+            scanner.advance()
+            if case let .string(file, location)? = scanner.peek() {
+                scanner.advance()
+                return .module(try self.import(file: file), location: location)
+            }
         }
 
         throw Error.parserError(location: scanner.location,
-                                reason: .unexpectedTokenEncountered(token: token))
+                                reason: .unexpectedTokenEncountered(token: scanner.advance()))
     }
 
-    private func `import`(file: String) throws -> (modules: [AbstractSyntaxTree.ModuleNode], symbolTable: SymbolTable) {
+    private static func `import`(file: String) throws -> [AbstractSyntaxTree.Expression] {
         // Check for a user provided file first
 
         // Check for a library
@@ -62,7 +67,7 @@ struct ImportParser: ParserHelperProtocol {
                 let path = libPath.appendingPathComponent(file).appendingPathExtension("bolt")
                 let ast = try BuildSystem.Module.import(for: File(url: path))
 
-                return (ast.modules, ast.symbolTable)
+                return ast.expressions
             }
             catch let error {
                 print(error)

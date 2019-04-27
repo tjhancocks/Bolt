@@ -18,53 +18,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct CallParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .identifier? = scanner.peek(), case .symbol(.leftParen, _)? = scanner.peek(ahead: 1) {
-            return true
-        } else {
-            return false
-        }
+struct CallParser: SubParserProtocol {
+
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(weakIdentifier: true, expected:
+            .identifier(text: "foo", mark: scanner.location),
+            .symbol(symbol: .leftParen, mark: scanner.location)
+        )
     }
 
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-
-        // Target function
-        let idParser = IdentifierParser()
-        guard idParser.test(for: scanner), let id = try idParser.parse(from: scanner, ast: ast) as? AbstractSyntaxTree.IdentifierNode else {
-            fatalError("Begun parsing what was expected to be a function call, but didn't find a function call. This is may mean the parser is out of sync with itself.")
-        }
-
-        // Argument list
-        try scanner.consume(expected: .symbol(symbol: .leftParen, mark: .unknown))
-        var arguments: [AbstractSyntaxTree.Node] = []
-
-        let parsers = Parser.scopedParsers
-        nextArgument: while scanner.available {
-            if case .symbol(.rightParen, _)? = scanner.peek() {
-                break
-            }
-
-            for parser in parsers {
-                if parser.test(for: scanner) {
-                    arguments.append(try parser.parse(from: scanner, ast: ast))
-
-                    if case .symbol(.comma, _)? = scanner.peek() {
-                        scanner.advance()
-                        continue nextArgument
-                    } else {
-                        break nextArgument
-                    }
-                }
-            }
-
-            // Reaching this point is an indication of something not being handled.
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        guard case let .identifier(identifierName, location)? = scanner.peek() else {
             throw Error.parserError(location: scanner.location,
-                                    reason: .unexpectedTokenEncountered(token: scanner.token))
+                                    reason: .expected(token: .identifier(text: "foo", mark: scanner.location)))
+        }
+        scanner.advance()
+
+        guard GroupParser.test(scanner: scanner) else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .symbol(symbol: .leftParen, mark: scanner.location)))
+        }
+        guard case let .group(arguments, _) = try GroupParser.parse(scanner: scanner, owner: parser) else {
+            fatalError("GroupParser returned an unexpected expression.")
         }
 
-        try scanner.consume(expected: .symbol(symbol: .rightParen, mark: .unknown))
-
-        return AbstractSyntaxTree.CallNode(function: id, arguments: arguments, mark: id.mark)
+        return .call(identifier: .identifier(identifierName, location: location),
+                     arguments: arguments,
+                     location: location)
     }
+
 }

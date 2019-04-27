@@ -18,21 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct FloatLiteralParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .float? = scanner.peek() {
-            return true
+struct ParameterSema: SemaProtocol {
+
+    static func performSemanticAnalysis(
+        on expr: AbstractSyntaxTree.Expression,
+        for sema: Sema
+    ) throws -> [AbstractSyntaxTree.Expression] {
+        if case let .parameterDeclaration(name, type, location) = expr {
+
+            // Check that the type is a valid storage type. For example, 'None'
+            // is not valid in this context.
+            guard type.type.isValidStorageType else {
+                throw Error.semaError(location: expr.location,
+                                      reason: .illegalStorageType(got: type.type))
+            }
+
+            // Define the symbol.
+            try sema.symbolTable.defineSymbol(name: name, expression: expr, isDeclaration: true, location: location)
+
+            return [expr]
         } else {
-            return false
+            throw Error.semaError(location: expr.location, reason: .expectedParameterDeclaration(got: expr))
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        let token = scanner.advance()
-        guard case let .float(value, _, mark) = token else {
-            throw Error.parserError(location: scanner.location,
-                                    reason: .unrecognised(token: token))
-        }
-        return AbstractSyntaxTree.FloatLiteralNode(value: value, mark: mark)
-    }
 }

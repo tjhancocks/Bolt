@@ -58,6 +58,17 @@ extension Type {
     }
 }
 
+// MARK: - Type Validation
+
+extension Type {
+    var isValidStorageType: Bool {
+        switch self {
+        case .none:                 return false
+        default:                    return true
+        }
+    }
+}
+
 // MARK: - Interpret a sequence of Tokens as a type.
 
 extension Type {

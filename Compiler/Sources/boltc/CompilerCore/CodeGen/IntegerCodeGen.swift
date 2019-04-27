@@ -18,25 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class ParameterNode: Node {
-        private(set) var name: String
-        private(set) var type: AbstractSyntaxTree.TypeNode
-        private(set) var mark: Mark
+import LLVM
 
-        override var valueType: Type {
-            return type.valueType
+struct IntegerCodeGen: CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        guard case let .integer(value, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedInteger(got: expr))
         }
 
-        init(name: String, type: AbstractSyntaxTree.TypeNode, mark: Mark) {
-            self.name = name
-            self.mark = mark
-            self.type = type
-        }
-
-        override var description: String {
-            return "Parameter '\(name)' of type '\(type)' [\(mark)]"
-        }
+        return IntType.int64.constant(value)
     }
-}
 
+}

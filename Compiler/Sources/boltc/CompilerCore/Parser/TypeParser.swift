@@ -18,52 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct TypeParser: ParserHelperProtocol {
+struct TypeParser: SubParserProtocol {
 
-    // MARK: - Contextual Parser Helper
-    static func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.TypeNode {
+    /// Check the upcoming tokens in the scanner to determine if they are the
+    /// beginning of a function.
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        fatalError("A type is a contextual element and should be assumed to exist based on the context the parser is in.")
+    }
+
+    /// Consume a function declaration expression, and if possible a function
+    /// body for a function definition expression.
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
         let location = scanner.location
         var typeTokens: [Token] = []
 
-        // Extract each of the tokens
         while scanner.available {
-            if test(for: scanner) == false {
-                break
-            }
-
-            // Attempt to create a new type
             if let token = scanner.peek(), let _ = try? Type.resolve(from: typeTokens + [token], location: location) {
-                typeTokens.append(scanner.advance())
-            } else if typeTokens.isEmpty, let token = scanner.peek() {
+                scanner.advance()
                 typeTokens.append(token)
-                break
             } else {
                 break
             }
         }
 
-        return AbstractSyntaxTree.TypeNode(type: try Type.resolve(from: typeTokens, location: location), mark: location)
+        let type = try Type.resolve(from: typeTokens, location: location)
+        return .type(type, location: location)
     }
 
-    static func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .identifier? = scanner.peek() {
-            return true
-        }
-        else if case .symbol(.star, _)? = scanner.peek() {
-            return true
-        }
-        else {
-            return false
-        }
-    }
-
-    // MARK: - Lone Parser Helper
-
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        return TypeParser.test(for: scanner)
-    }
-
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        return try TypeParser.parse(from: scanner, ast: ast)
-    }
 }

@@ -18,27 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import LLVM
+struct StringParser: SubParserProtocol {
 
-extension AbstractSyntaxTree.VariableNode: CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue? {
-        // TODO: Fix this - generate correct types of variables
-        if let variable = context.variables[name] {
-            return variable
-        }
-        else if let initialValue = initialValue as? CodeGeneratorProtocol {
-            if let function = context.builder.currentFunction {
-                // Generate a local scope variable
-                return nil
-            }
-            else if let global = try initialValue.global(named: name, for: context) {
-                // Generate a global scope variable
-                context.variables[name] = global
-                return global
-            }
-        }
-
-        return nil
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected:
+            .string(text: "foo", mark: scanner.location)
+        )
     }
+
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        guard case let .string(text, location)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: scanner.advance()))
+        }
+        scanner.advance()
+
+        // Produce an string literal token.
+        return .string(text, location: location)
+    }
+
 }

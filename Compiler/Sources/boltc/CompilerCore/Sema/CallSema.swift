@@ -18,26 +18,50 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree.CallNode: SemaNode {
+struct CallSema: SemaProtocol {
 
-    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node] {
-        guard let function = function.reference as? AbstractSyntaxTree.FunctionNode else {
-            throw Error.semaError(location: location, reason: .expectedFunctionForCall)
+    static func performSemanticAnalysis(
+        on expr: AbstractSyntaxTree.Expression,
+        for sema: Sema
+    ) throws -> [AbstractSyntaxTree.Expression] {
+        // Ensure we're checking an unbound function call
+        guard case let .call(.identifier(name, idLocation), arguments, location) = expr else {
+            throw Error.semaError(location: expr.location,
+                                  reason: .expectedCallExpression(got: expr))
         }
 
-        guard function.parameters.count == children.count else {
+        // Find the symbol for the call.
+        guard let function = sema.symbolTable.find(symbolNamed: name) else {
+            throw Error.semaError(location: idLocation,
+                                  reason: .unknownIdentifier(name: name))
+        }
+
+        // Is the symbol actually for a function declaration?
+        guard case let .functionDeclaration(_, _, parameters, _) = function.expression else {
             throw Error.semaError(location: location,
-                                  reason: .incorrectArgumentCount(expected: function.parameters.count, got: children.count))
+                                  reason: .expectedFunctionIdentifier(got: function.expression))
         }
 
-        try zip(function.parameters, children).enumerated().forEach { offset, parameter in
-            guard parameter.0.valueType == parameter.1.valueType else {
-                throw Error.semaError(location: location,
-                                      reason: .argumentTypeMismatch(expected: parameter.0.valueType, got: parameter.1.valueType, at: offset))
+        // Analyse the arguments and check the types against the function parameters.
+        guard arguments.count == parameters.count else {
+            throw Error.semaError(location: location,
+                                  reason: .incorrectArgumentCount(expected: parameters.count, got: arguments.count))
+        }
+        
+        let semaArgs = try sema.analyse(expressions: arguments)
+        for (offset, (arg, parameter)) in zip(semaArgs, parameters).enumerated() {
+            if arg.type.resolvedType != parameter.type.resolvedType {
+                throw Error.semaError(location: arg.location,
+                                      reason: .argumentTypeMismatch(expected: parameter.type,
+                                                                    got: arg.type,
+                                                                    at: offset))
             }
         }
 
-        return [self]
+        let bound: AbstractSyntaxTree.Expression = .boundIdentifier(function.expression, location: idLocation)
+        return [
+            .call(identifier: bound, arguments: semaArgs, location: location)
+        ]
     }
 
 }

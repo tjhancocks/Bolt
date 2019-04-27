@@ -22,45 +22,10 @@ class Parser {
     private(set) var tokenStream: TokenStream
     private(set) var scanner: Scanner<[Token]>
 
-    lazy var parsers: [ParserHelperProtocol] = {
-        return Parser.rootParsers
-    }()
-
     init(tokenStream: TokenStream) {
         self.tokenStream = tokenStream
         self.scanner = tokenStream.scanner
     }
-}
-
-// MARK: - Parser Lookup
-
-extension Parser {
-
-    static var rootParsers: [ParserHelperProtocol] {
-        return [
-            FunctionParser(),
-            ImportParser(),
-            VariableParser()
-        ]
-    }
-
-    static var scopedParsers: [ParserHelperProtocol] {
-        return returnParsers + [
-            ReturnParser(),
-            VariableParser()
-        ]
-    }
-
-    static var returnParsers: [ParserHelperProtocol] {
-        return [
-            StringLiteralParser(),
-            FloatLiteralParser(),
-            IntegerLiteralParser(),
-            CallParser(),
-            IdentifierParser()
-        ]
-    }
-
 }
 
 // MARK: - Parsing
@@ -69,86 +34,91 @@ extension Parser {
 
     @discardableResult
     func parse() throws -> AbstractSyntaxTree {
-        let ast = AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName)
+        var expressions: [AbstractSyntaxTree.Expression] = []
 
         while scanner.available {
-            ast.add(try parseNextExpression(from: scanner, ast: ast))
-        }
-        
-        return ast
-    }
-
-    func parseNextExpression(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        // Loop through the parsers and find one that matches.
-        for parser in parsers {
-            if parser.test(for: scanner) {
-                return try parser.parse(from: scanner, ast: ast)
+            let expr = try parseGlobalExpression()
+            if case let .module(moduleExpressions, _) = expr {
+                expressions.append(contentsOf: moduleExpressions)
+            }
+            else {
+                expressions.append(expr)
             }
         }
 
-        // If we get here, then we must assume that we could not recognise
-        // the sequence of tokens
-        if let token = scanner.peek() {
-            throw Error.parserError(location: scanner.location, reason: .unrecognised(token: token))
-        }
-        else {
-            throw Error.parserError(location: scanner.location, reason: .unexpectedEndOfTokenStream)
-        }
+        return AbstractSyntaxTree(mainModuleName: tokenStream.file.moduleName, expressions: expressions)
     }
-
-}
-
-// MARK: - Parser Protocol
-
-protocol ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node
-}
-
-
-// MARK: - Scanner Extensions
-
-extension Scanner where T.Element == Token {
 
     @discardableResult
-    func consume(expected: T.Element...) throws -> [T.Element] {
-        var expectedTokens = expected
-        var matched: [T.Element] = []
-
-        while available, let expect = expectedTokens.first {
-            let item = advance()
-            guard expectedTokens.removeFirst().matches(item) else {
-                throw Error.parserError(location: location,
-                                        reason: .expected(token: expect))
+    func parseGlobalExpression() throws -> AbstractSyntaxTree.Expression {
+        if test(parser: FunctionParser.self) {
+            return try parse(parser: FunctionParser.self)
+        }
+        else if test(parser: ConstantParser.self) {
+            return try parse(parser: ConstantParser.self)
+        }
+        else if test(parser: ImportParser.self) {
+            return try parse(parser: ImportParser.self)
+        }
+        else {
+            guard let token = scanner.peek() else {
+                fatalError("Expected a token to present in the token stream, but found nil.")
             }
-            matched.append(item)
-        }
-
-        if matched.isEmpty, let expect = expected.first {
-            throw Error.parserError(location: location,
-                                    reason: .expected(token: expect))
-        }
-
-        return matched
-    }
-
-    func peekLast() -> T.Element? {
-        if let array = input as? [Token] {
-            return array.last
-        } else {
-            return nil
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unrecognised(token: token))
         }
     }
 
-    var location: Mark {
-        return peek()?.mark ?? peekLast()?.mark ?? .unknown
-    }
-
-    var token: Token {
-        guard let token = peek() else {
-            fatalError("Attempted to access a token that has been considered presented, but isn't.")
+    @discardableResult
+    func parseExpression() throws -> AbstractSyntaxTree.Expression {
+        if test(parser: GroupParser.self) {
+            return try parse(parser: GroupParser.self)
         }
-        return token
+        else if test(parser: BlockParser.self) {
+            return try parse(parser: BlockParser.self)
+        }
+        else if test(parser: ReturnParser.self) {
+            return try parse(parser: ReturnParser.self)
+        }
+        else if test(parser: IntegerParser.self) {
+            return try parse(parser: IntegerParser.self)
+        }
+        else if test(parser: StringParser.self) {
+            return try parse(parser: StringParser.self)
+        }
+        else if test(parser: ConstantParser.self) {
+            return try parse(parser: ConstantParser.self)
+        }
+        else if test(parser: CallParser.self) {
+            return try parse(parser: CallParser.self)
+        }
+        else if test(parser: IdentifierParser.self) {
+            return try parse(parser: IdentifierParser.self)
+        }
+        else {
+            guard let token = scanner.peek() else {
+                fatalError("Expected a token to present in the token stream, but found nil.")
+            }
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unrecognised(token: token))
+        }
     }
 
+    @discardableResult
+    func test<SubParserType>(parser _: SubParserType.Type) -> Bool where SubParserType: SubParserProtocol {
+        return SubParserType.test(scanner: scanner)
+    }
+
+    @discardableResult
+    func parse<SubParserType>(
+        parser _: SubParserType.Type
+    ) throws -> AbstractSyntaxTree.Expression where SubParserType: SubParserProtocol {
+        return try SubParserType.parse(scanner: scanner, owner: self)
+    }
+
+}
+
+protocol SubParserProtocol {
+    static func test(scanner: Scanner<[Token]>) -> Bool
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression
 }

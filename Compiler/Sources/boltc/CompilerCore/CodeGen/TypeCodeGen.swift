@@ -21,18 +21,20 @@
 import LLVM
 
 extension Type {
+
     var IRType: IRType {
-        switch resolvedType {
-            // Special Types
-        case .none:                         return VoidType()
+        switch self {
+            // Fundamental Types
+        case .none: return VoidType()
+        case .int: return IntType.int64
+        case .int8: return IntType.int8
 
-            // Basic types
-        case .int:                          return IntType.int64
-        case .int8:                         return IntType.int8
-        case .pointer(let subtype):         return PointerType(pointee: subtype.IRType)
-
-        default:
-            fatalError("There is currently no IRType mapped to \(self).")
+            // Nested Types
+        case let .pointer(subType): return PointerType(pointee: subType.IRType)
+            
+            // Complex Types
+        case .string: return resolvedType.IRType
         }
     }
+
 }

@@ -18,79 +18,92 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct FunctionParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .keyword(.func, _)? = scanner.peek(), case .symbol(.leftAngle, _)? = scanner.peek(ahead: 1) {
-            return true
-        } else {
-            return false
-        }
-    }
+struct FunctionParser: SubParserProtocol {
 
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        // Function declaration prologue: func<
-        try scanner.consume(expected:
+    /// Check the upcoming tokens in the scanner to determine if they are the
+    /// beginning of a function.
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected:
             .keyword(keyword: .func, mark: .unknown),
             .symbol(symbol: .leftAngle, mark: .unknown)
         )
+    }
 
-        // Function return type
-        let returnType = try TypeParser.parse(from: scanner, ast: ast)
+    /// Consume a function declaration expression, and if possible a function
+    /// body for a function definition expression.
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        let declarationLocation = scanner.location
 
-        // Post return type: >
+        // Advance by the first two tokens, which should be known to be 'func' '<'
+        scanner.advance(by: 2)
+
+        // Launch a sub parser for the return type.
+        let returnType = try TypeParser.parse(scanner: scanner, owner: parser)
+
+        // The next token must be '>' to conclude the type definition
         try scanner.consume(expected:
             .symbol(symbol: .rightAngle, mark: .unknown)
         )
 
-        // Function name
-        guard case let .identifier(name, mark)? = scanner.peek() else {
-            if scanner.available {
-                throw Error.parserError(location: scanner.location,
-                                        reason: .unexpectedTokenEncountered(token: scanner.token))
-            } else {
-                throw Error.parserError(location: scanner.location,
-                                        reason: .unexpectedEndOfTokenStream)
+        // Extract the function name
+        guard case let .identifier(functionName, _)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .identifier(text: "foo", mark: scanner.location)))
+        }
+        scanner.advance()
+        
+        // Check for the presence of the parameter group. If it is not present then
+        // we have no parameters.
+        var parameters: [AbstractSyntaxTree.Expression] = []
+        if GroupParser.test(scanner: scanner) {
+            if case let .group(expressions, _) = try GroupParser.parse(scanner: scanner, owner: parser, parseFn: parameter) {
+                parameters = expressions
             }
+        }
 
+        // Build the function declaration using the discovered information
+        let functionDeclaration: AbstractSyntaxTree.Expression = .functionDeclaration(name: functionName,
+                                                                                      returnType: returnType,
+                                                                                      parameters: parameters,
+                                                                                      location: declarationLocation)
+
+        // Check if we have a function definition. If we do then parse the code
+        // block and produce a definition, otherwise just return the declaration.
+        if BlockParser.test(scanner: scanner) {
+            let block = try BlockParser.parse(scanner: scanner, owner: parser)
+            return .definition(declaration: functionDeclaration, body: block)
+        }
+        else {
+            return functionDeclaration
+        }
+    }
+
+}
+
+// MARK: - Parameter Parser
+
+extension FunctionParser {
+
+    static func parameter(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        // Fetch the name of the parameter.
+        guard case let .identifier(parameterName, location)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .identifier(text: "foo", mark: scanner.location)))
         }
         scanner.advance()
 
-        // Parameters
-        try scanner.consume(expected:.symbol(symbol: .leftParen, mark: .unknown))
-        var parameters: [AbstractSyntaxTree.ParameterNode] = []
-        while scanner.available {
-            if case .symbol(.rightParen, _)? = scanner.peek() {
-                break
-            }
-
-            parameters.append(try ParameterParser.parse(from: scanner, ast: ast))
-
-            if case .symbol(.comma, _)? = scanner.peek() {
-                scanner.advance()
-            } else {
-                break
-            }
+        // The parameter name and type delimiter is ':'
+        guard case .symbol(.colon, _)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .expected(token: .symbol(symbol: .colon, mark: scanner.location)))
         }
-        try scanner.consume(expected: .symbol(symbol: .rightParen, mark: .unknown))
+        scanner.advance()
 
-        // Build the declaration
-        let declaration = AbstractSyntaxTree.FunctionNode(name: name, returnType: returnType, parameters: parameters, mark: mark)
-        try ast.symbolTable.defineSymbol(name: name, node: declaration, location: mark)
+        // Fetch the type of the parameter
+        let type = try TypeParser.parse(scanner: scanner, owner: parser)
 
-        // Check if there is a code body attached? If so then add it.
-        let codeBlockParser = CodeBlockParser()
-        if codeBlockParser.test(for: scanner) {
-            ast.symbolTable.enterScope()
-
-            try parameters.forEach {
-                try ast.symbolTable.defineSymbol(name: $0.name, node: $0, location: mark)
-            }
-
-            declaration.add(try codeBlockParser.parse(from: scanner, ast: ast))
-            ast.symbolTable.leaveScope()
-        }
-
-        // Return the function node.
-        return declaration
+        // Construct the final parameter declaration.
+        return .parameterDeclaration(name: parameterName, type: type, location: location)
     }
+
 }

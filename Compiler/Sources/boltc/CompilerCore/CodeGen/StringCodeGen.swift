@@ -18,23 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class StringLiteralNode: Node {
-        private(set) var value: String
-        private(set) var mark: Mark
+import LLVM
 
-        override var valueType: Type {
-            return .string
+struct StringCodeGen: CodeGenProtocol, GlobalCodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        guard case let .string(value, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedString(got: expr))
         }
 
-        init(value: String, mark: Mark) {
-            self.value = value
-            self.mark = mark
+        if codeGen.builder.currentFunction != nil {
+            return codeGen.builder.buildGlobalStringPtr(value)
         }
-
-        override var description: String {
-            return "String '\(value)' [\(mark)]"
+        else {
+            return try emitGlobal(for: expr, in: codeGen)
         }
     }
-}
 
+    static func emitGlobal(for expr: AbstractSyntaxTree.Expression, named name: String? = nil, in codeGen: CodeGen) throws -> Global? {
+        guard case let .string(value, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedString(got: expr))
+        }
+
+        return codeGen.builder.addGlobalString(name: name ?? codeGen.generateAutoLabel(), value: value)
+    }
+
+}

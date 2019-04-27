@@ -20,9 +20,27 @@
 
 import LLVM
 
-extension AbstractSyntaxTree.IntegerLiteralNode: CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue? {
-        return IntType.int64.constant(value)
+struct CallCodeGen: CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        guard case let .call(.boundIdentifier(.functionDeclaration(name, _, _, _), _), arguments, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .callMustBeBoundToFunction(got: expr))
+        }
+
+        guard let function = codeGen.module.function(named: name) else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .missingFunctionDeclaration(function: name))
+        }
+
+        let callArguments: [LLVM.IRValue] = try arguments.map { arg in
+            guard let value = try codeGen.emit(expression: arg) else {
+                fatalError("Argument expression should produce an IRValue.")
+            }
+            return value
+        }
+
+        return codeGen.builder.buildCall(function, args: callArguments)
     }
+
 }

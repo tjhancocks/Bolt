@@ -18,24 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class TypeNode: Node {
-        private(set) var type: Type
-        private(set) var mark: Mark
+import LLVM
 
-        override var valueType: Type {
-            return type
-        }
+class BlockCodeGen: CodeGenProtocol {
 
-        init(type: Type, mark: Mark) {
-            self.type = type
-            self.mark = mark
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        if case let .block(expressions, _) = expr {
+            return try codeGen.emit(expressions: expressions)
         }
-
-        override var description: String {
-            return type.description
-        }
+        return nil
     }
+
 }
-
-

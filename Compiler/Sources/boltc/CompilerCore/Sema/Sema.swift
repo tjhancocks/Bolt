@@ -20,24 +20,55 @@
 
 class Sema {
     private(set) var ast: AbstractSyntaxTree
+    private(set) var symbolTable: SymbolTable
 
     init(ast: AbstractSyntaxTree) {
         self.ast = ast
+        self.symbolTable = .init()
     }
 }
 
 extension Sema {
     func performAnalysis() throws {
-        try ast.traverse { node in
-            if let semaNode = node as? SemaNode {
-                return try semaNode.performSemanticAnalysis()
-            } else {
-                return [node]
-            }
+        ast.update(expressions: try analyse(expressions: ast.expressions))
+    }
+
+    func analyse(expressions: [AbstractSyntaxTree.Expression]) throws -> [AbstractSyntaxTree.Expression] {
+        var resultExpressions: [AbstractSyntaxTree.Expression] = []
+        for expr in expressions {
+            resultExpressions.append(contentsOf: try analyse(expression: expr))
+        }
+        return resultExpressions
+    }
+
+    func analyse(expression: AbstractSyntaxTree.Expression) throws -> [AbstractSyntaxTree.Expression] {
+        switch expression {
+        case let .block(expressions, location):
+            return [.block(try analyse(expressions: expressions), location: location)]
+
+        case .functionDeclaration, .definition(.functionDeclaration, _):
+            return try FunctionSema.performSemanticAnalysis(on: expression, for: self)
+
+        case .parameterDeclaration:
+            return try ParameterSema.performSemanticAnalysis(on: expression, for: self)
+
+        case .constantDeclaration, .definition(.constantDeclaration, _):
+            return try ConstantSema.performSemanticAnalysis(on: expression, for: self)
+
+        case .call:
+            return try CallSema.performSemanticAnalysis(on: expression, for: self)
+
+        case .identifier:
+            return try IdentifierSema.performSemanticAnalysis(on: expression, for: self)
+
+        default:
+            // Simply return unhandled cases as we're not performing any semantic
+            // analysis of them yet (if needed at all).
+            return [expression]
         }
     }
 }
 
-protocol SemaNode {
-    func performSemanticAnalysis() throws -> [AbstractSyntaxTree.Node]
+protocol SemaProtocol {
+    static func performSemanticAnalysis(on expr: AbstractSyntaxTree.Expression, for sema: Sema) throws -> [AbstractSyntaxTree.Expression]
 }

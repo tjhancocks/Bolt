@@ -18,27 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct IdentifierParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .identifier? = scanner.peek() {
-            return true
-        } else {
-            return false
-        }
+struct IdentifierParser: SubParserProtocol {
+
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(weakIdentifier: true, expected:
+            .identifier(text: "foo", mark: scanner.location)
+        )
     }
 
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        let token = scanner.advance()
-        guard case let .identifier(name, mark) = token else {
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        guard case let .identifier(name, location) = scanner.advance() else {
             throw Error.parserError(location: scanner.location,
-                                    reason: .unrecognised(token: token))
+                                    reason: .expected(token: .identifier(text: "foo", mark: scanner.location)))
         }
-
-        // Is there a definition for the identifier?
-        if let symbol = ast.symbolTable.find(symbolNamed: name) {
-            return AbstractSyntaxTree.IdentifierNode(identifier: name, referencing: symbol, mark: mark)
-        } else {
-            return AbstractSyntaxTree.IdentifierNode(identifier: name, mark: mark)
-        }
+        return .identifier(name, location: location)
     }
+
 }

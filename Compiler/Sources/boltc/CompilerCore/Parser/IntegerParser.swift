@@ -18,17 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import LLVM
+struct IntegerParser: SubParserProtocol {
 
-extension AbstractSyntaxTree.ReturnNode: CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue? {
-        if let returnExpression = returnExpression as? CodeGeneratorProtocol,
-            let returnValue = try returnExpression.generate(for: context)
-        {
-            return context.builder.buildRet(returnValue)
-        } else {
-            return context.builder.buildRetVoid()
-        }
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected:
+            .integer(number: 0, text: "0", mark: scanner.location)
+        )
     }
+
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        guard case let .integer(value, _, location)? = scanner.peek() else {
+            throw Error.parserError(location: scanner.location,
+                                    reason: .unexpectedTokenEncountered(token: scanner.advance()))
+        }
+        scanner.advance()
+
+        // Produce an integer literal token.
+        return .integer(value, location: location)
+    }
+
 }

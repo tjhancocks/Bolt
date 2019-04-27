@@ -60,17 +60,21 @@ class SymbolTable {
         _ = symbolScopes.popLast()
     }
 
-    func find(symbolNamed name: String) -> AbstractSyntaxTree.Node? {
-        return currentScope.first(where: { $0.name == name })?.node
+    func find(symbolNamed name: String) -> SymbolTable.Symbol? {
+        return currentScope.first(where: { $0.name == name })
     }
 
-    func defineSymbol(name: String, node: AbstractSyntaxTree.Node, location: Mark) throws {
+    func defineSymbol(name: String, expression: AbstractSyntaxTree.Expression, isDeclaration: Bool, location: Mark) throws {
         if let original = find(symbolNamed: name) {
-            throw Error.parserError(location: location, reason: .redefinition(of: original, with: node))
+            if original.isDeclaration == true && isDeclaration == false {
+                original.isDeclaration = false
+                return
+            }
+            throw Error.parserError(location: location, reason: .redefinition(of: original.expression, with: expression))
         }
 
         // At this point we are allowed to create.
-        currentScope.append(Symbol(name: name, fullName: name, node: node))
+        currentScope.append(Symbol(name: name, fullName: name, expression: expression, isDeclaration: isDeclaration))
     }
 
     func add(rootSymbols: [SymbolTable.Symbol]) {
@@ -83,12 +87,14 @@ extension SymbolTable {
     class Symbol {
         let name: String
         let fullName: String
-        let node: AbstractSyntaxTree.Node
+        let expression: AbstractSyntaxTree.Expression
+        var isDeclaration: Bool
 
-        init(name: String, fullName: String, node: AbstractSyntaxTree.Node) {
+        init(name: String, fullName: String, expression: AbstractSyntaxTree.Expression, isDeclaration: Bool) {
             self.name = name
             self.fullName = fullName
-            self.node = node
+            self.expression = expression
+            self.isDeclaration = isDeclaration
         }
     }
 }

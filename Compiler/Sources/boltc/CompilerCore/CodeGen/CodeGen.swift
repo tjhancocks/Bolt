@@ -21,63 +21,111 @@
 import LLVM
 
 class CodeGen {
-    private(set) var context: Context
     private(set) var ast: AbstractSyntaxTree
+    private(set) var module: LLVM.Module
+    private(set) var builder: LLVM.IRBuilder
+
+    private(set) var autoLabelCount: Int = 0
+
+    private var scopes: [(parameters: [String: LLVM.IRValue], variables: [String: LLVM.IRValue])] = []
+    private(set) var parameters: [String: LLVM.IRValue] = [:]
+    private(set) var variables: [String: LLVM.IRValue] = [:]
 
     init(ast: AbstractSyntaxTree) {
-        let module = LLVM.Module(name: ast.initialModule.name)
+        let module = LLVM.Module(name: ast.moduleName)
+        self.builder = LLVM.IRBuilder(module: module)
+        self.module = module
         self.ast = ast
-        self.context = .init(module: module, builder: .init(module: module))
     }
-}
 
-extension CodeGen {
-    class Context {
-        let module: LLVM.Module
-        let builder: LLVM.IRBuilder
-        var parameters: [String:LLVM.IRValue]
-        var variables: [String:LLVM.IRValue]
+    func generateAutoLabel() -> String {
+        let label = "L\(autoLabelCount)"
+        autoLabelCount += 1
+        return label
+    }
 
-        init(module: LLVM.Module, builder: LLVM.IRBuilder) {
-            self.module = module
-            self.builder = builder
-            self.parameters = [:]
-            self.variables = [:]
+    func add(variable name: String, of value: LLVM.IRValue?) {
+        variables[name] = value
+    }
+
+    func set(parameters: [String: LLVM.IRValue]) {
+        self.parameters = parameters
+    }
+
+    func saveCurrentScope() {
+        scopes.append((parameters, variables))
+    }
+
+    func restorePreviousScope() {
+        guard let (parameters, variables) = scopes.popLast() else {
+            fatalError("Code Generation scope stack is out of sync.")
+        }
+        self.parameters = parameters
+        self.variables = variables
+    }
+
+    func emit() throws -> LLVM.Module {
+        _ = try emit(expressions: ast.expressions)
+        return module
+    }
+
+    func emit(expressions: [AbstractSyntaxTree.Expression]) throws -> LLVM.IRValue? {
+        var outputValue: LLVM.IRValue?
+
+        for expression in expressions {
+            // We're only interested in the last value of a series of expressions.
+            outputValue = try emit(expression: expression)
+        }
+
+        return outputValue
+    }
+
+    func emit(expression: AbstractSyntaxTree.Expression) throws -> LLVM.IRValue? {
+        switch expression {
+        case .functionDeclaration, .definition(.functionDeclaration, _):
+            return try FunctionCodeGen.emit(for: expression, in: self)
+
+        case .constantDeclaration, .definition(.constantDeclaration, _):
+            return try ConstantCodeGen.emit(for: expression, in: self)
+
+        case .call:
+            return try CallCodeGen.emit(for: expression, in: self)
+
+        case .voidReturn, .return:
+            return try ReturnCodeGen.emit(for: expression, in: self)
+
+        case .block:
+            return try BlockCodeGen.emit(for: expression, in: self)
+
+        case .boundIdentifier:
+            return try IdentifierCodeGen.emit(for: expression, in: self)
+
+        case .string:
+            return try StringCodeGen.emit(for: expression, in: self)
+
+        case .integer:
+            return try IntegerCodeGen.emit(for: expression, in: self)
+
+        default:
+            return nil
+        }
+    }
+
+    func emitGlobal(valueExpression: AbstractSyntaxTree.Expression, named name: String? = nil) throws -> LLVM.Global? {
+        switch valueExpression {
+        case .string:
+            return try StringCodeGen.emitGlobal(for: valueExpression, named: name, in: self)
+
+        default:
+            return nil
         }
     }
 }
 
-extension CodeGen {
-    func generateLLVMModule() throws -> LLVM.Module {
-        try ast.modules.forEach { node in
-            try node.generate(for: context)
-        }
-        return context.module
-    }
+protocol CodeGenProtocol {
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> LLVM.IRValue?
 }
 
-protocol CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue?
-
-    func global(named name: String, for context: CodeGen.Context) throws -> Global?
-}
-
-extension CodeGeneratorProtocol {
-    func global(named name: String, for context: CodeGen.Context) throws -> Global? {
-        return nil
-    }
-}
-
-extension AbstractSyntaxTree.ModuleNode: CodeGeneratorProtocol {
-    @discardableResult
-    func generate(for context: CodeGen.Context) throws -> IRValue? {
-        try children.forEach { node in
-            guard let node = node as? CodeGeneratorProtocol else {
-                return
-            }
-            _ = try node.generate(for: context)
-        }
-        return nil
-    }
+protocol GlobalCodeGenProtocol {
+    static func emitGlobal(for expr: AbstractSyntaxTree.Expression, named name: String?, in codeGen: CodeGen) throws -> LLVM.Global?
 }

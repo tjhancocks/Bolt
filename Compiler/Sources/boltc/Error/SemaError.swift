@@ -22,4 +22,13 @@ enum SemaError {
     case expectedFunctionForCall
     case incorrectArgumentCount(expected: Int, got: Int)
     case argumentTypeMismatch(expected: Type, got: Type, at: Int)
+    case illegalStorageType(got: Type)
+    case typeMismatch(expected: Type, got: Type)
+    case expectedFunctionDeclarationDefinition(got: AbstractSyntaxTree.Expression)
+    case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
+    case expectedConstantDeclarationDefinition(got: AbstractSyntaxTree.Expression)
+    case expectedCallExpression(got: AbstractSyntaxTree.Expression)
+    case unknownIdentifier(name: String)
+    case expectedFunctionIdentifier(got: AbstractSyntaxTree.Expression)
+    case expectedUnboundIdentifier(got: AbstractSyntaxTree.Expression)
 }

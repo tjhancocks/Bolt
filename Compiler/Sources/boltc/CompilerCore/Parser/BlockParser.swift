@@ -18,24 +18,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class CodeBlockNode: Node {
-        private(set) var mark: Mark
+class BlockParser: SubParserProtocol {
 
-        override var valueType: Type {
-            return children.last?.valueType ?? .none
-        }
-
-        init(children: [AbstractSyntaxTree.Node], mark: Mark) {
-            self.mark = mark
-            super.init()
-            children.forEach {
-                add($0)
-            }
-        }
-
-        override var description: String {
-            return "CodeBlock"
-        }
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected:
+            .symbol(symbol: .leftBrace, mark: scanner.location)
+        )
     }
+
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        let location = scanner.location
+        var expressions: [AbstractSyntaxTree.Expression] = []
+
+        // Assume that the '{' is present. The test should have been run first, or we've
+        // been invoked from an area that expects it.
+        scanner.advance()
+
+        blockParser: while scanner.available {
+            // If we hit a '}' then break out of the group.
+            if scanner.test(expected: .symbol(symbol: .rightBrace, mark: scanner.location)) {
+                break blockParser
+            }
+
+            expressions.append(try parser.parseExpression())
+        }
+
+        // Consume to the closing '}'
+        scanner.advance()
+
+        // Return a block expression to the caller.
+        return .block(expressions, location: location)
+    }
+
 }

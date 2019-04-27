@@ -18,28 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-extension AbstractSyntaxTree {
-    class ReturnNode: Node {
-        private(set) var returnExpression: AbstractSyntaxTree.Node?
-        private(set) var mark: Mark
+import LLVM
 
-        override var valueType: Type {
-            return returnExpression?.valueType ?? .none
+struct ReturnCodeGen: CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        if case .voidReturn = expr {
+            return codeGen.builder.buildRetVoid()
         }
-
-        init(returnExpression: AbstractSyntaxTree.Node?, mark: Mark) {
-            self.returnExpression = returnExpression
-            self.mark = mark
-        }
-
-        override var description: String {
-            if let expr = returnExpression {
-                return "Return using '\(expr)'"
-            } else {
-                return "Return nothing"
+        else if case let .return(expression, _) = expr {
+            guard let value = try codeGen.emit(expression: expression) else {
+                fatalError("Failed to produce IRValue for return expression")
             }
+            return codeGen.builder.buildRet(value)
+        }
+        else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedReturn(got: expr))
         }
     }
+
 }
-
-

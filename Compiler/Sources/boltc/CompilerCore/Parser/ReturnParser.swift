@@ -18,27 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-struct ReturnParser: ParserHelperProtocol {
-    func test(for scanner: Scanner<[Token]>) -> Bool {
-        if case .keyword(.return, _)? = scanner.peek() {
-            return true
-        } else {
-            return false
+struct ReturnParser: SubParserProtocol {
+
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected:
+            .keyword(keyword: .return, mark: scanner.location)
+        )
+    }
+
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        let location = scanner.location
+
+        // Skip over the 'return' keyword token as it should have been confirmed to be present.
+        scanner.advance()
+
+        // We need to try and resolve another expression. If we can't resolve
+        // an expression then just assume that the return is a "void return".
+        if let expression = try? parser.parseExpression() {
+            return .return(expression, location: location)
+        }
+        else {
+            return .voidReturn(location: location)
         }
     }
 
-    func parse(from scanner: Scanner<[Token]>, ast: AbstractSyntaxTree) throws -> AbstractSyntaxTree.Node {
-        try scanner.consume(expected: .keyword(keyword: .return, mark: .unknown))
-
-        // Is there an expression following the return keyword?
-        let parsers = Parser.returnParsers
-
-        for parser in parsers {
-            if parser.test(for: scanner) {
-                return AbstractSyntaxTree.ReturnNode(returnExpression: try parser.parse(from: scanner, ast: ast), mark: .unknown)
-            }
-        }
-
-        return AbstractSyntaxTree.ReturnNode(returnExpression: nil, mark: .unknown)
-    }
 }
