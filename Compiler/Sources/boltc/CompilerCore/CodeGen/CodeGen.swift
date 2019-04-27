@@ -27,6 +27,8 @@ class CodeGen {
 
     private(set) var autoLabelCount: Int = 0
 
+    private(set) var variables: [String: LLVM.IRValue] = [:]
+
     init(ast: AbstractSyntaxTree) {
         let module = LLVM.Module(name: ast.moduleName)
         self.builder = LLVM.IRBuilder(module: module)
@@ -38,6 +40,10 @@ class CodeGen {
         let label = "L\(autoLabelCount)"
         autoLabelCount += 1
         return label
+    }
+
+    func add(variable name: String, of value: LLVM.IRValue?) {
+        variables[name] = value
     }
 
     func emit() throws -> LLVM.Module {

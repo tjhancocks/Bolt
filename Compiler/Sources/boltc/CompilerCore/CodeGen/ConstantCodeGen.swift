@@ -40,7 +40,7 @@ struct ConstantCodeGen: CodeGenProtocol {
         initialValue: AbstractSyntaxTree.Expression?,
         in codeGen: CodeGen
     ) throws -> IRValue? {
-        guard case let .constantDeclaration(name, type, _) = declaration else {
+        guard case let .constantDeclaration(name, _, _) = declaration else {
             throw Error.codeGenError(location: declaration.location,
                                      reason: .expectedConstantDeclaration(got: declaration))
         }
@@ -51,7 +51,9 @@ struct ConstantCodeGen: CodeGenProtocol {
                 return nil
             }
             else {
-                return try codeGen.emitGlobal(valueExpression: initialValue, named: name)
+                let value = try codeGen.emitGlobal(valueExpression: initialValue, named: name)
+                codeGen.add(variable: name, of: value)
+                return value
             }
         }
 
