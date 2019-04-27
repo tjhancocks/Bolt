@@ -27,6 +27,8 @@ class CodeGen {
 
     private(set) var autoLabelCount: Int = 0
 
+    private var scopes: [(parameters: [String: LLVM.IRValue], variables: [String: LLVM.IRValue])] = []
+    private(set) var parameters: [String: LLVM.IRValue] = [:]
     private(set) var variables: [String: LLVM.IRValue] = [:]
 
     init(ast: AbstractSyntaxTree) {
@@ -44,6 +46,22 @@ class CodeGen {
 
     func add(variable name: String, of value: LLVM.IRValue?) {
         variables[name] = value
+    }
+
+    func set(parameters: [String: LLVM.IRValue]) {
+        self.parameters = parameters
+    }
+
+    func saveCurrentScope() {
+        scopes.append((parameters, variables))
+    }
+
+    func restorePreviousScope() {
+        guard let (parameters, variables) = scopes.popLast() else {
+            fatalError("Code Generation scope stack is out of sync.")
+        }
+        self.parameters = parameters
+        self.variables = variables
     }
 
     func emit() throws -> LLVM.Module {

@@ -20,6 +20,7 @@
 
 enum CodeGenError {
     case expectedFunctionDeclaration(got: AbstractSyntaxTree.Expression)
+    case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
     case expectedString(got: AbstractSyntaxTree.Expression)
     case expectedInteger(got: AbstractSyntaxTree.Expression)
     case expectedConstantDeclaration(got: AbstractSyntaxTree.Expression)

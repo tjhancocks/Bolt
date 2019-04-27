@@ -30,6 +30,21 @@ struct FunctionCodeGen: CodeGenProtocol {
             let function = try emit(functionDeclaration: declaration, in: codeGen)
 
             // Produce the body of the function
+            codeGen.saveCurrentScope()
+
+            // Build the parameters for the function.
+            var parameters: [String: LLVM.IRValue] = [:]
+            function.parameters.forEach {
+                parameters[$0.name] = $0
+            }
+            codeGen.set(parameters: parameters)
+
+            let entry = function.appendBasicBlock(named: "entry")
+            codeGen.builder.positionAtEnd(of: entry)
+
+            _ = try codeGen.emit(expression: body)
+
+            codeGen.restorePreviousScope()
 
             return function
         }
@@ -53,6 +68,14 @@ struct FunctionCodeGen: CodeGenProtocol {
         let functionType = FunctionType(argTypes: parameters.map { $0.type.IRType},
                                         returnType: returnType.type.IRType)
         let function = codeGen.builder.addFunction(name, type: functionType)
+
+        for (var funcParameter, parameter) in zip(function.parameters, parameters) {
+            guard case let .parameterDeclaration(name, _, _) = parameter else {
+                throw Error.codeGenError(location: parameter.location,
+                                         reason: .expectedParameterDeclaration(got: parameter))
+            }
+            funcParameter.name = name
+        }
 
         return function
     }
