@@ -60,7 +60,7 @@ struct CallSema: SemaProtocol {
 
         let bound: AbstractSyntaxTree.Expression = .boundIdentifier(function.expression, location: idLocation)
         return [
-            .call(identifier: bound, arguments: arguments, location: location)
+            .call(identifier: bound, arguments: semaArgs, location: location)
         ]
     }
 

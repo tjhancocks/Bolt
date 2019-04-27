@@ -88,6 +88,12 @@ class CodeGen {
         case .constantDeclaration, .definition(.constantDeclaration, _):
             return try ConstantCodeGen.emit(for: expression, in: self)
 
+        case .call:
+            return try CallCodeGen.emit(for: expression, in: self)
+
+        case .block:
+            return try BlockCodeGen.emit(for: expression, in: self)
+
         case .boundIdentifier:
             return try IdentifierCodeGen.emit(for: expression, in: self)
 

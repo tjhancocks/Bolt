@@ -18,13 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum CodeGenError {
-    case expectedFunctionDeclaration(got: AbstractSyntaxTree.Expression)
-    case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
-    case expectedString(got: AbstractSyntaxTree.Expression)
-    case expectedInteger(got: AbstractSyntaxTree.Expression)
-    case expectedConstantDeclaration(got: AbstractSyntaxTree.Expression)
-    case missingFunctionDeclaration(function: String)
-    case unexpectedExpression(got: AbstractSyntaxTree.Expression)
-    case callMustBeBoundToFunction(got: AbstractSyntaxTree.Expression)
+import LLVM
+
+struct CallCodeGen: CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        guard case let .call(.boundIdentifier(.functionDeclaration(name, _, _, _), _), arguments, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .callMustBeBoundToFunction(got: expr))
+        }
+
+        guard let function = codeGen.module.function(named: name) else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .missingFunctionDeclaration(function: name))
+        }
+
+        let callArguments: [LLVM.IRValue] = try arguments.map { arg in
+            guard let value = try codeGen.emit(expression: arg) else {
+                fatalError("Argument expression should produce an IRValue.")
+            }
+            return value
+        }
+
+        return codeGen.builder.buildCall(function, args: callArguments)
+    }
+
 }

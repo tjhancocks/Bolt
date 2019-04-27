@@ -18,13 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum CodeGenError {
-    case expectedFunctionDeclaration(got: AbstractSyntaxTree.Expression)
-    case expectedParameterDeclaration(got: AbstractSyntaxTree.Expression)
-    case expectedString(got: AbstractSyntaxTree.Expression)
-    case expectedInteger(got: AbstractSyntaxTree.Expression)
-    case expectedConstantDeclaration(got: AbstractSyntaxTree.Expression)
-    case missingFunctionDeclaration(function: String)
-    case unexpectedExpression(got: AbstractSyntaxTree.Expression)
-    case callMustBeBoundToFunction(got: AbstractSyntaxTree.Expression)
+import LLVM
+
+class BlockCodeGen: CodeGenProtocol {
+
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        if case let .block(expressions, _) = expr {
+            return try codeGen.emit(expressions: expressions)
+        }
+        return nil
+    }
+
 }
