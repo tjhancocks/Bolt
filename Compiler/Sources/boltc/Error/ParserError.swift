@@ -24,4 +24,5 @@ enum ParserError {
     case unexpectedTokenEncountered(token: Token)
     case expected(token: Token)
     case redefinition(of: AbstractSyntaxTree.Expression, with: AbstractSyntaxTree.Expression)
+    case unknownCompilerNamespace(name: String)
 }

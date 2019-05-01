@@ -50,6 +50,9 @@ extension AbstractSyntaxTree {
         case call(identifier: Expression, arguments: [Expression], location: Mark)
         case voidReturn(location: Mark)
         case `return`(Expression, location: Mark)
+
+        // Directives
+        case linkerFlag(flag: String, location: Mark)
     }
 }
 
@@ -73,6 +76,7 @@ extension AbstractSyntaxTree.Expression {
         case let .boundIdentifier(_, location): return location
         case let .voidReturn(location): return location
         case let .return(_, location): return location
+        case let .linkerFlag(_, location): return location
         }
     }
 }

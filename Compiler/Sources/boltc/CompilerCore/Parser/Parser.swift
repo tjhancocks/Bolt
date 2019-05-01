@@ -60,6 +60,9 @@ extension Parser {
         else if test(parser: ImportParser.self) {
             return try parse(parser: ImportParser.self)
         }
+        else if test(parser: DirectiveParser.self) {
+            return try parse(parser: DirectiveParser.self)
+        }
         else {
             guard let token = scanner.peek() else {
                 fatalError("Expected a token to present in the token stream, but found nil.")
