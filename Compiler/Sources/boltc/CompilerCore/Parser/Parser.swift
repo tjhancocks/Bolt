@@ -41,6 +41,9 @@ extension Parser {
             if case let .module(moduleExpressions, _) = expr {
                 expressions.append(contentsOf: moduleExpressions)
             }
+            else if case let .linkerFlag(flag, _) = expr {
+                BuildSystem.main.specify(linkerFlag: flag)
+            }
             else {
                 expressions.append(expr)
             }

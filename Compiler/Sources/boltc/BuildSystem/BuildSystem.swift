@@ -31,6 +31,7 @@ class BuildSystem {
     var emitVersion: Bool = false
     var outputPath: String = "program"
     private(set) var libraryPaths: [URL] = []
+    private(set) var linkerFlags: [String] = []
 
     // Only one build system should exist - so its a singleton
     static let main = BuildSystem()
@@ -43,6 +44,10 @@ class BuildSystem {
     func add(libraryPath: String) throws {
         let url = URL(fileURLWithPath: libraryPath)
         libraryPaths.append(url)
+    }
+
+    func specify(linkerFlag: String) {
+        linkerFlags.append(linkerFlag)
     }
 
 }
@@ -188,7 +193,10 @@ extension BuildSystem {
     }
 
     func link(binary: String, objects: [String]) throws {
-        if let result = shell(launchPath: "/usr/bin/ld", arguments: ["-lc", "-o", binary] + objects), result.isEmpty == false {
+        if let result = shell(launchPath: "/usr/bin/ld",
+                              arguments: linkerFlags + ["-o", binary] + objects),
+           result.isEmpty == false
+        {
             print("\(result)")
         }
     }
