@@ -41,6 +41,9 @@ extension Parser {
             if case let .module(moduleExpressions, _) = expr {
                 expressions.append(contentsOf: moduleExpressions)
             }
+            else if case let .linkerFlag(flag, _) = expr {
+                BuildSystem.main.specify(linkerFlag: flag)
+            }
             else {
                 expressions.append(expr)
             }
@@ -59,6 +62,9 @@ extension Parser {
         }
         else if test(parser: ImportParser.self) {
             return try parse(parser: ImportParser.self)
+        }
+        else if test(parser: DirectiveParser.self) {
+            return try parse(parser: DirectiveParser.self)
         }
         else {
             guard let token = scanner.peek() else {

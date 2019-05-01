@@ -20,6 +20,7 @@ contexts:
     - include: statements
 
   statements:
+    - include: directive
     - include: func_decl
     - include: var_decl
     - include: return
@@ -91,6 +92,13 @@ contexts:
             1: meta.group.bolt
           pop: true
         - include: expressions
+
+  directive:
+    - match: ^(\@(pragma))\s*\((linker)\s*,\s*([^\)]+)\)
+      captures:
+        1: keyword.import.bolt
+        3: entity.name.namespace.bolt
+        4: string.other.bolt
 
 ################################################################################
 
