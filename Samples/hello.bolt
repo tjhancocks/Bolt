@@ -20,7 +20,7 @@
 
 import std
 
-func<Int> main() {
+func<Int32> main() {
 	print("Hello, World!")
 	return 0
 }
