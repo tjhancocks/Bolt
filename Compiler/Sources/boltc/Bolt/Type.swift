@@ -29,13 +29,13 @@ indirect enum Type: Equatable {
     case uint16
     case uint32
     case uint64
-    case int
-    case uint
 
     // Nested
     case pointer(Type)
 
     // Complex
+    case int
+    case uint
     case string
 }
 
@@ -66,9 +66,29 @@ extension Type: CustomStringConvertible {
 // MARK: - Complex Type Resolution
 
 extension Type {
+    private var nativeUnsignedInt: Type {
+        switch BuildSystem.main.nativeBitWidth {
+        case 16:                    return .uint16
+        case 32:                    return .uint32
+        case 64:                    return .uint64
+        default:                    return .uint64
+        }
+    }
+
+    private var nativeSignedInt: Type {
+        switch BuildSystem.main.nativeBitWidth {
+        case 16:                    return .int16
+        case 32:                    return .int32
+        case 64:                    return .int64
+        default:                    return .int64
+        }
+    }
+
     var resolvedType: Type {
         switch self {
         case .string:               return .pointer(.int8)
+        case .int:                  return nativeSignedInt
+        case .uint:                 return nativeUnsignedInt
         default:                    return self
         }
     }

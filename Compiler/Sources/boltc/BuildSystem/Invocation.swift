@@ -40,6 +40,9 @@ class Invocation {
             case "--version":       BuildSystem.main.emitVersion = true
             case "--library":       try BuildSystem.main.add(libraryPath: arguments.advance())
 
+                // Output rules
+            case "-m":              BuildSystem.main.nativeBitWidth = Int(arguments.advance()) ?? 64
+
                 // Only used for CI checks
             case "--validate-bolt": BuildSystem.main.emitValidationResponse = true
 
