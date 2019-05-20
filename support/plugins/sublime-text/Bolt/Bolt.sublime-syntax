@@ -8,7 +8,7 @@ scope: source.bolt
 variables:
   identifier: \b[[:alpha:]_][[:alnum:]_]*\b
   return_type: 'None|{{data_type}}'
-  data_type: '(Int|Int8|Int16|Int32|Int64|UInt|UInt8|UInt16|UInt32|UInt64|String)\s*\**'
+  data_type: '(Int|Int8|Int16|Int32|Int64|UInt|UInt8|UInt16|UInt32|UInt64|String|IntPointer|UIntPointer|Bool)\s*\**'
 
 contexts:
   # The prototype context is prepended to all contexts but those setting
@@ -30,6 +30,7 @@ contexts:
   expressions:
     - include: strings
     - include: numbers
+    - include: language_constants
     - include: call
 
   func_decl:
@@ -109,6 +110,10 @@ contexts:
   numbers:
     - match: '\b(-)?[0-9.]+\b'
       scope: constant.numeric.bolt
+
+  language_constants:
+    - match: '\b(true|false)\b'
+      scope: constant.language.bolt
 
   strings:
     - match: '"'
