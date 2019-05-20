@@ -21,6 +21,7 @@
 indirect enum Type: Equatable {
     // Fundamental Types
     case none
+    case bool
     case int8
     case int16
     case int32
@@ -45,6 +46,7 @@ extension Type: CustomStringConvertible {
     var text: String {
         switch self {
         case .none:                     return "None"
+        case .bool:                     return "Bool"
         case .int8:                     return "Int8"
         case .int16:                    return "Int16"
         case .int32:                    return "Int32"
@@ -130,6 +132,7 @@ extension Type {
         switch baseName {
             // Fundamental Types
         case "None":            baseType = .none
+        case "Bool":            baseType = .bool
         case "Int8":            baseType = .int8
         case "Int":             baseType = .int
         case "IntPointer":      baseType = .intPointer

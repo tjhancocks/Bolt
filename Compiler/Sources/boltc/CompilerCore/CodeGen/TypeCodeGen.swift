@@ -26,6 +26,7 @@ extension Type {
         switch self {
             // Fundamental Types
         case .none: return VoidType()
+        case .bool: return IntType.int1
         case .int8, .uint8: return IntType.int8
         case .int16, .uint16: return IntType.int16
         case .int32, .uint32: return IntType.int32
