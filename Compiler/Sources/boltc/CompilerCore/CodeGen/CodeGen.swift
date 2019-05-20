@@ -106,6 +106,9 @@ class CodeGen {
         case .integer:
             return try IntegerCodeGen.emit(for: expression, in: self)
 
+        case .bool:
+            return try BoolCodeGen.emit(for: expression, in: self)
+
         default:
             return nil
         }

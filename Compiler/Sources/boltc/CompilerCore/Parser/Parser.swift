@@ -89,6 +89,9 @@ extension Parser {
         else if test(parser: IntegerParser.self) {
             return try parse(parser: IntegerParser.self)
         }
+        else if test(parser: BoolParser.self) {
+            return try parse(parser: BoolParser.self)
+        }
         else if test(parser: StringParser.self) {
             return try parse(parser: StringParser.self)
         }

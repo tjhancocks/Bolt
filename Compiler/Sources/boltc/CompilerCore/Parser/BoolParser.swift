@@ -18,26 +18,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum Keyword: CaseIterable, Equatable {
-    case `func`, `return`, `import`, `let`
-    case `true`, `false`
-}
+struct BoolParser: SubParserProtocol {
 
-extension Keyword: CustomStringConvertible {
+    static func test(scanner: Scanner<[Token]>) -> Bool {
+        return scanner.test(expected: .keyword(keyword: .true, mark: scanner.location))
+            || scanner.test(expected: .keyword(keyword: .false, mark: scanner.location))
+    }
 
-    var text: String {
-        switch self {
-        case .func:         return "func"
-        case .return:       return "return"
-        case .import:       return "import"
-        case .let:          return "let"
-        case .true:         return "true"
-        case .false:        return "false"
+    static func parse(scanner: Scanner<[Token]>, owner parser: Parser) throws -> AbstractSyntaxTree.Expression {
+        if case let .keyword(.true, location)? = scanner.peek() {
+            scanner.advance()
+            return .bool(true, location: location)
         }
-    }
+        else if case let .keyword(.false, location)? = scanner.peek() {
+            scanner.advance()
+            return .bool(false, location: location)
+        }
 
-    var description: String {
-        return "<\(text)>"
+        throw Error.parserError(location: scanner.location,
+                                reason: .unexpectedTokenEncountered(token: scanner.advance()))
     }
-
+    
 }

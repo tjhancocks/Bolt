@@ -23,6 +23,7 @@ extension AbstractSyntaxTree {
         // Literals
         case string(String, location: Mark)
         case integer(Int, location: Mark)
+        case bool(Bool, location: Mark)
 
         // Code Block, Groups
         case module([Expression], location: Mark)
@@ -63,6 +64,7 @@ extension AbstractSyntaxTree.Expression {
         switch self {
         case let .string(_, location): return location
         case let .integer(_, location): return location
+        case let .bool(_, location): return location
         case let .module(_, location): return location
         case let .block(_, location): return location
         case let .group(_, location): return location
@@ -88,6 +90,7 @@ extension AbstractSyntaxTree.Expression {
         switch self {
         case .string: return .string
         case .integer: return .int
+        case .bool: return .bool
         case let .type(type, _): return type
         case let .call(identifier, _, _): return identifier.type
         case let .block(body, _): return body.last?.type ?? .none
