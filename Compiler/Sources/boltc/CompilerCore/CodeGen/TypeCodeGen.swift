@@ -26,7 +26,6 @@ extension Type {
         switch self {
             // Fundamental Types
         case .none: return VoidType()
-        case .int, .uint: return IntType.int64
         case .int8, .uint8: return IntType.int8
         case .int16, .uint16: return IntType.int16
         case .int32, .uint32: return IntType.int32
@@ -37,6 +36,7 @@ extension Type {
             
             // Complex Types
         case .string: return resolvedType.IRType
+        case .int, .uint: return resolvedType.IRType
         }
     }
 
