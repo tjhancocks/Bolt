@@ -37,6 +37,7 @@ extension Type {
             // Complex Types
         case .string: return resolvedType.IRType
         case .int, .uint: return resolvedType.IRType
+        case .intPointer, .uintPointer: return resolvedType.IRType
         }
     }
 

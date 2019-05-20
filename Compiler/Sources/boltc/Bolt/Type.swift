@@ -36,6 +36,8 @@ indirect enum Type: Equatable {
     // Complex
     case int
     case uint
+    case intPointer
+    case uintPointer
     case string
 }
 
@@ -53,6 +55,8 @@ extension Type: CustomStringConvertible {
         case .uint64:                   return "UInt64"
         case .int:                      return "Int"
         case .uint:                     return "UInt"
+        case .intPointer:               return "IntPointer"
+        case .uintPointer:              return "UIntPointer"
         case .pointer(let type):        return "\(type.text)*"
         case .string:                   return resolvedType.text
         }
@@ -89,6 +93,8 @@ extension Type {
         case .string:               return .pointer(.int8)
         case .int:                  return nativeSignedInt
         case .uint:                 return nativeUnsignedInt
+        case .intPointer:           return nativeSignedInt
+        case .uintPointer:          return nativeUnsignedInt
         default:                    return self
         }
     }
@@ -126,10 +132,12 @@ extension Type {
         case "None":            baseType = .none
         case "Int8":            baseType = .int8
         case "Int":             baseType = .int
+        case "IntPointer":      baseType = .intPointer
         case "Int16":           baseType = .int16
         case "Int32":           baseType = .int32
         case "Int64":           baseType = .int64
         case "UInt":            baseType = .uint
+        case "UIntPointer":     baseType = .uintPointer
         case "UInt8":           baseType = .uint8
         case "UInt16":          baseType = .uint16
         case "UInt32":          baseType = .uint32
