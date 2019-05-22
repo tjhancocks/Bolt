@@ -122,7 +122,16 @@ extension Parser {
     func parse<SubParserType>(
         parser _: SubParserType.Type
     ) throws -> AbstractSyntaxTree.Expression where SubParserType: SubParserProtocol {
-        return try SubParserType.parse(scanner: scanner, owner: self)
+        var expr = try SubParserType.parse(scanner: scanner, owner: self)
+
+        // Attempt to try and merge the expression into a larger binary operation.
+        // For this to be acheivable the expression needs to be followed by a
+        // binary operator, and have a type that is not "none".
+        if let binaryOperator = BinaryOperatorParser.parse(scanner: scanner), expr.type != .none {
+            expr = .binaryOperation(lhs: expr, operator: binaryOperator, rhs: try parseExpression(), location: expr.location)
+        }
+
+        return expr
     }
 
 }
