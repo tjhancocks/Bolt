@@ -6,3 +6,11 @@
 //
 
 import Foundation
+
+enum BinaryOperator: String {
+    case addition = "+"
+    case subtract = "-"
+    case multiply = "*"
+    case divide = "/"
+    case modulo = "%"
+}
