@@ -21,13 +21,24 @@
 indirect enum Type: Equatable {
     // Fundamental Types
     case none
+    case bool
     case int8
-    case int
+    case int16
+    case int32
+    case int64
+    case uint8
+    case uint16
+    case uint32
+    case uint64
 
     // Nested
     case pointer(Type)
 
     // Complex
+    case int
+    case uint
+    case intPointer
+    case uintPointer
     case string
 }
 
@@ -35,8 +46,19 @@ extension Type: CustomStringConvertible {
     var text: String {
         switch self {
         case .none:                     return "None"
+        case .bool:                     return "Bool"
         case .int8:                     return "Int8"
+        case .int16:                    return "Int16"
+        case .int32:                    return "Int32"
+        case .int64:                    return "Int64"
+        case .uint8:                    return "UInt8"
+        case .uint16:                   return "UInt16"
+        case .uint32:                   return "UInt32"
+        case .uint64:                   return "UInt64"
         case .int:                      return "Int"
+        case .uint:                     return "UInt"
+        case .intPointer:               return "IntPointer"
+        case .uintPointer:              return "UIntPointer"
         case .pointer(let type):        return "\(type.text)*"
         case .string:                   return resolvedType.text
         }
@@ -50,9 +72,31 @@ extension Type: CustomStringConvertible {
 // MARK: - Complex Type Resolution
 
 extension Type {
+    private var nativeUnsignedInt: Type {
+        switch BuildSystem.main.nativeBitWidth {
+        case 16:                    return .uint16
+        case 32:                    return .uint32
+        case 64:                    return .uint64
+        default:                    return .uint64
+        }
+    }
+
+    private var nativeSignedInt: Type {
+        switch BuildSystem.main.nativeBitWidth {
+        case 16:                    return .int16
+        case 32:                    return .int32
+        case 64:                    return .int64
+        default:                    return .int64
+        }
+    }
+
     var resolvedType: Type {
         switch self {
         case .string:               return .pointer(.int8)
+        case .int:                  return nativeSignedInt
+        case .uint:                 return nativeUnsignedInt
+        case .intPointer:           return nativeSignedInt
+        case .uintPointer:          return nativeUnsignedInt
         default:                    return self
         }
     }
@@ -88,8 +132,19 @@ extension Type {
         switch baseName {
             // Fundamental Types
         case "None":            baseType = .none
+        case "Bool":            baseType = .bool
         case "Int8":            baseType = .int8
         case "Int":             baseType = .int
+        case "IntPointer":      baseType = .intPointer
+        case "Int16":           baseType = .int16
+        case "Int32":           baseType = .int32
+        case "Int64":           baseType = .int64
+        case "UInt":            baseType = .uint
+        case "UIntPointer":     baseType = .uintPointer
+        case "UInt8":           baseType = .uint8
+        case "UInt16":          baseType = .uint16
+        case "UInt32":          baseType = .uint32
+        case "UInt64":          baseType = .uint64
 
             // Complex Types
         case "String":          baseType = .string

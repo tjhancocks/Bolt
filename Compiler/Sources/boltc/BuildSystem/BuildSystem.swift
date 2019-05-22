@@ -30,6 +30,7 @@ class BuildSystem {
     var emitValidationResponse: Bool = false
     var emitVersion: Bool = false
     var outputPath: String = "program"
+    var nativeBitWidth: Int = 64
     private(set) var libraryPaths: [URL] = []
     private(set) var linkerFlags: [String] = []
 

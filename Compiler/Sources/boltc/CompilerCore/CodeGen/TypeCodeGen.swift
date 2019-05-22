@@ -26,14 +26,19 @@ extension Type {
         switch self {
             // Fundamental Types
         case .none: return VoidType()
-        case .int: return IntType.int64
-        case .int8: return IntType.int8
+        case .bool: return IntType.int1
+        case .int8, .uint8: return IntType.int8
+        case .int16, .uint16: return IntType.int16
+        case .int32, .uint32: return IntType.int32
+        case .int64, .uint64: return IntType.int64
 
             // Nested Types
         case let .pointer(subType): return PointerType(pointee: subType.IRType)
             
             // Complex Types
         case .string: return resolvedType.IRType
+        case .int, .uint: return resolvedType.IRType
+        case .intPointer, .uintPointer: return resolvedType.IRType
         }
     }
 

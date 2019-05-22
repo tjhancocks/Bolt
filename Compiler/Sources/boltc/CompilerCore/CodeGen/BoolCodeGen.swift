@@ -18,26 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-enum Keyword: CaseIterable, Equatable {
-    case `func`, `return`, `import`, `let`
-    case `true`, `false`
-}
+import LLVM
 
-extension Keyword: CustomStringConvertible {
+struct BoolCodeGen: CodeGenProtocol {
 
-    var text: String {
-        switch self {
-        case .func:         return "func"
-        case .return:       return "return"
-        case .import:       return "import"
-        case .let:          return "let"
-        case .true:         return "true"
-        case .false:        return "false"
+    static func emit(for expr: AbstractSyntaxTree.Expression, in codeGen: CodeGen) throws -> IRValue? {
+        guard case let .bool(value, _) = expr else {
+            throw Error.codeGenError(location: expr.location,
+                                     reason: .expectedInteger(got: expr))
         }
-    }
 
-    var description: String {
-        return "<\(text)>"
+        return IntType.int1.constant(value ? 1 : 0)
     }
 
 }
