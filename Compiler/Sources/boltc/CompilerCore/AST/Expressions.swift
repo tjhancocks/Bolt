@@ -48,6 +48,7 @@ extension AbstractSyntaxTree {
         case boundIdentifier(Expression, location: Mark)
 
         // Expressions
+        case binaryOperation(lhs: Expression, operator: BinaryOperator, rhs: Expression, location: Mark)
         case call(identifier: Expression, arguments: [Expression], location: Mark)
         case voidReturn(location: Mark)
         case `return`(Expression, location: Mark)
@@ -79,6 +80,7 @@ extension AbstractSyntaxTree.Expression {
         case let .voidReturn(location): return location
         case let .return(_, location): return location
         case let .linkerFlag(_, location): return location
+        case let .binaryOperation(_, _, _, location): return location
         }
     }
 }
@@ -100,6 +102,7 @@ extension AbstractSyntaxTree.Expression {
         case let .boundIdentifier(.parameterDeclaration(_, type, _), _): return type.type
         case let .return(expr, _): return expr.type
         case let .parameterDeclaration(_, type, _): return type.type
+        case let .binaryOperation(lhs, _, _, _): return lhs.type
 
             // If an expression is unhandled, treat it as none.
             // Not all expressions have a type.
