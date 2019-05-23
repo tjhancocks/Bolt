@@ -61,6 +61,12 @@ extension Sema {
         case .identifier:
             return try IdentifierSema.performSemanticAnalysis(on: expression, for: self)
 
+        case .binaryOperation:
+            return try BinaryOperationSema.performSemanticAnalysis(on: expression, for: self)
+
+        case .return:
+            return try ReturnSema.performSemanticAnalysis(on: expression, for: self)
+
         default:
             // Simply return unhandled cases as we're not performing any semantic
             // analysis of them yet (if needed at all).
